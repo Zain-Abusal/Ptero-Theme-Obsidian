@@ -1,0 +1,36 @@
+name: Set up workspace
+description: Node, the pinned Pterodactyl panel SDK (built from source), and the workspace dependencies.
+inputs:
+  panel-ref:
+    description: Pterodactyl panel tag the theme is built against.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: npm
+        cache-dependency-path: |
+          package-lock.json
+
+    - name: Cache the panel checkout and its SDK build
+      id: panel-cache
+      uses: actions/cache@v4
+      with:
+        path: panel
+        key: panel-${{ inputs.panel-ref }}-v1
+
+    - name: Clone and build the panel SDK
+      if: steps.panel-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        git clone --depth 1 --branch "${{ inputs.panel-ref }}" https://github.com/pterodactyl/panel.git panel
+        cd panel
+        npm ci --no-audit --no-fund
+        npm run sdk:generate
+        npm run sdk:testing
+
+    - name: Install workspace dependencies
+      shell: bash
+      run: npm ci --no-audit --no-fund

@@ -71,7 +71,8 @@ function Creator({ onDone }: { onDone: () => void }) {
     const tooMany = plan.tasks.length > TASK_LIMIT;
 
     const toggleDay = (d: number) => setDays(days.includes(d) ? days.filter((x) => x !== d) : [...days, d]);
-    const toggleWarning = (w: number) => setWarnings(warnings.includes(w) ? warnings.filter((x) => x !== w) : [...warnings, w]);
+    const toggleWarning = (w: number) =>
+        setWarnings(warnings.includes(w) ? warnings.filter((x) => x !== w) : [...warnings, w]);
 
     const create = async () => {
         setBusy(true);
@@ -79,7 +80,14 @@ function Creator({ onDone }: { onDone: () => void }) {
             async () => {
                 for (const time of times) {
                     await createRestart(id, {
-                        name: `Restart ${time}${days.length && days.length < 7 ? ` (${[...days].sort().map((d) => DAY_NAMES[d]).join(', ')})` : ''}`,
+                        name: `Restart ${time}${
+                            days.length && days.length < 7
+                                ? ` (${[...days]
+                                      .sort()
+                                      .map((d) => DAY_NAMES[d])
+                                      .join(', ')})`
+                                : ''
+                        }`,
                         cron: cronFor(time, days, plan.lead),
                         onlyWhenOnline: onlineOnly,
                         plan,
@@ -101,7 +109,10 @@ function Creator({ onDone }: { onDone: () => void }) {
                     <Step n={1}>When</Step>
                     <div className='flex flex-wrap items-center gap-2'>
                         {times.map((time, i) => (
-                            <span key={i} className='flex items-center gap-1 rounded-full border border-border bg-background pr-1 pl-3'>
+                            <span
+                                key={i}
+                                className='flex items-center gap-1 rounded-full border border-border bg-background pr-1 pl-3'
+                            >
                                 <Clock className='size-3.5 text-muted-foreground' aria-hidden />
                                 <input
                                     type='time'
@@ -137,14 +148,18 @@ function Creator({ onDone }: { onDone: () => void }) {
                                 onClick={() => toggleDay(d)}
                                 className={cn(
                                     'h-8 w-11 rounded-full border text-xs font-semibold transition',
-                                    days.includes(d) ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted'
+                                    days.includes(d)
+                                        ? 'border-primary bg-primary text-primary-foreground'
+                                        : 'border-border hover:bg-muted'
                                 )}
                             >
                                 {name}
                             </button>
                         ))}
                         <span className='self-center pl-1 text-xs text-muted-foreground'>
-                            {days.length === 0 || days.length === 7 ? 'Every day' : `${days.length} day${days.length === 1 ? '' : 's'} a week`}
+                            {days.length === 0 || days.length === 7
+                                ? 'Every day'
+                                : `${days.length} day${days.length === 1 ? '' : 's'} a week`}
                         </span>
                     </div>
                 </div>
@@ -160,7 +175,9 @@ function Creator({ onDone }: { onDone: () => void }) {
                                 onClick={() => toggleWarning(w)}
                                 className={cn(
                                     'h-8 rounded-full border px-3 font-mono text-xs transition',
-                                    warnings.includes(w) ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted'
+                                    warnings.includes(w)
+                                        ? 'border-primary bg-primary text-primary-foreground'
+                                        : 'border-border hover:bg-muted'
                                 )}
                             >
                                 {short(w)}
@@ -192,7 +209,9 @@ function Creator({ onDone }: { onDone: () => void }) {
                                         task.action === 'power' ? 'bg-warning' : 'bg-border'
                                     )}
                                 />
-                                <span className='mr-2 font-mono text-xs text-muted-foreground'>+{task.time_offset}s</span>
+                                <span className='mr-2 font-mono text-xs text-muted-foreground'>
+                                    +{task.time_offset}s
+                                </span>
                                 {task.action === 'power' ? (
                                     <strong className='inline-flex items-center gap-1'>
                                         <RotateCw className='size-3.5' aria-hidden /> Restart
@@ -205,7 +224,8 @@ function Creator({ onDone }: { onDone: () => void }) {
                     </ol>
                     {tooMany && (
                         <Alert type='warning' className='mt-3'>
-                            This needs {plan.tasks.length} tasks and the panel allows {TASK_LIMIT} per schedule by default. Pick fewer warnings.
+                            This needs {plan.tasks.length} tasks and the panel allows {TASK_LIMIT} per schedule by
+                            default. Pick fewer warnings.
                         </Alert>
                     )}
                 </div>
@@ -249,7 +269,11 @@ export default function SchedulerScreen() {
 
     const toggle = async (schedule: Schedule) => {
         setBusy(schedule.id);
-        await attempt(() => setActive(id, schedule, !schedule.is_active), schedule.is_active ? 'Paused.' : 'Resumed.', toast);
+        await attempt(
+            () => setActive(id, schedule, !schedule.is_active),
+            schedule.is_active ? 'Paused.' : 'Resumed.',
+            toast
+        );
         await refresh();
         setBusy(null);
     };
@@ -268,7 +292,8 @@ export default function SchedulerScreen() {
             }
         >
             <p className='text-xs text-muted-foreground'>
-                Times are in the panel's timezone, which can differ from yours. The next run below shows exactly when it fires.
+                Times are in the panel's timezone, which can differ from yours. The next run below shows exactly when it
+                fires.
             </p>
             {creating && (
                 <Creator
@@ -287,7 +312,9 @@ export default function SchedulerScreen() {
                             <CalendarClock />
                         </EmptyMedia>
                         <EmptyTitle>No restart schedules</EmptyTitle>
-                        <EmptyDescription>A daily restart clears lag and memory leaks. Players get a countdown first.</EmptyDescription>
+                        <EmptyDescription>
+                            A daily restart clears lag and memory leaks. Players get a countdown first.
+                        </EmptyDescription>
                     </EmptyHeader>
                 </Empty>
             )}
@@ -312,7 +339,9 @@ export default function SchedulerScreen() {
                                 <p>
                                     Next:{' '}
                                     <span className='text-foreground'>
-                                        {schedule.is_active && schedule.next_run_at ? formatDate(schedule.next_run_at, 'ddd D MMM, HH:mm') : 'paused'}
+                                        {schedule.is_active && schedule.next_run_at
+                                            ? formatDate(schedule.next_run_at, 'ddd D MMM, HH:mm')
+                                            : 'paused'}
                                     </span>
                                 </p>
                                 <p>{schedule.tasks.filter((t) => t.action === 'command').length} warnings</p>
@@ -346,7 +375,8 @@ export default function SchedulerScreen() {
             )}
             {others > 0 && (
                 <p className='text-xs text-muted-foreground'>
-                    {others} other schedule{others === 1 ? '' : 's'} on this server {others === 1 ? 'is' : 'are'} managed on the Schedules page.
+                    {others} other schedule{others === 1 ? '' : 's'} on this server {others === 1 ? 'is' : 'are'}{' '}
+                    managed on the Schedules page.
                 </p>
             )}
             <Dialog.Confirm

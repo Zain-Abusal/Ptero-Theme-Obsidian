@@ -14,7 +14,7 @@ function Section({ icon, title, description, children }: { icon: ReactNode; titl
                 <h2 className='mt-3 text-base font-bold tracking-tight'>{title}</h2>
                 <p className='mt-1 text-sm text-muted-foreground'>{description}</p>
             </div>
-            <div className='min-w-0 max-w-xl'>{children}</div>
+            <div className='obs-account-form min-w-0 max-w-xl'>{children}</div>
         </section>
     );
 }

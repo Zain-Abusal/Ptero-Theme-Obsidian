@@ -63,7 +63,7 @@ function Totals({ servers, total }: { servers: readonly ServerListItem[]; total:
             <Total label='Memory in use'>
                 {bytes(memory)}
                 {memoryLimit > 0 && (
-                    <span className='text-xs font-medium text-muted-foreground'>of {bytes(memoryLimit)}</span>
+                    <span className='ml-1 text-xs font-medium text-muted-foreground'>of {bytes(memoryLimit)}</span>
                 )}
             </Total>
         </div>

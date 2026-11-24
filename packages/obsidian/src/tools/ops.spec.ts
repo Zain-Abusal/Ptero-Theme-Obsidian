@@ -52,7 +52,12 @@ test('finds the Java a server needs from an UnsupportedClassVersionError', () =>
         'Exception in thread "main" java.lang.UnsupportedClassVersionError: io/papermc/paperclip/Main has been compiled by a more recent version of the Java Runtime (class file version 65.0), this version of the Java Runtime only recognizes class file versions up to 61.0'
     );
 
-    expect(finding).toMatchObject({ id: 'java-version', severity: 'critical', title: 'Needs Java 21, running Java 17', page: 'versions' });
+    expect(finding).toMatchObject({
+        id: 'java-version',
+        severity: 'critical',
+        title: 'Needs Java 21, running Java 17',
+        page: 'versions',
+    });
 });
 
 test('reads several problems from one log, critical first', () => {
@@ -78,15 +83,28 @@ test('spots the EULA, memory, freezes, Fabric and duplicate jars', () => {
 
     expect(ids('[ServerMain/INFO]: You need to agree to the EULA in order to run the server.')).toEqual(['eula']);
     expect(ids('java.lang.OutOfMemoryError: Java heap space')).toEqual(['memory']);
-    expect(ids('[Watchdog Thread/ERROR]: The server has stopped responding! This is (probably) not a Paper bug.')).toEqual(['watchdog']);
+    expect(
+        ids('[Watchdog Thread/ERROR]: The server has stopped responding! This is (probably) not a Paper bug.')
+    ).toEqual(['watchdog']);
     expect(ids('net.fabricmc.loader.impl.FormattedException: Mod resolution failed')).toEqual(['fabric']);
-    expect(ids('[Server thread/ERROR]: Ambiguous plugin name `LuckPerms\' for files `plugins/a.jar\' and `plugins/b.jar\'')).toEqual(['duplicate']);
+    expect(
+        ids("[Server thread/ERROR]: Ambiguous plugin name `LuckPerms' for files `plugins/a.jar' and `plugins/b.jar'")
+    ).toEqual(['duplicate']);
     expect(ids('Error: Unable to access jarfile server.jar')).toEqual(['jar-missing']);
 });
 
 test('opens only plausible world folders, likely names first', () => {
     const entry = (name: string, isFile = false) => ({ name, isFile, size: 0, modifiedAt: '' });
-    const root = [entry('plugins'), entry('logs'), entry('world_nether'), entry('lobby'), entry('world'), entry('.cache'), entry('server.jar', true), entry('survival')];
+    const root = [
+        entry('plugins'),
+        entry('logs'),
+        entry('world_nether'),
+        entry('lobby'),
+        entry('world'),
+        entry('.cache'),
+        entry('server.jar', true),
+        entry('survival'),
+    ];
 
     expect(worldCandidates(root, 'survival')).toEqual(['survival', 'world', 'world_nether', 'lobby']);
     expect(groupWorlds(['survival', 'world', 'world_nether', 'world_the_end', 'lobby'])).toEqual([
@@ -137,7 +155,7 @@ test('edits YAML values and keeps every comment', () => {
 });
 
 test('classifies and highlights console lines', () => {
-    expect(levelOf('[12:00:00 WARN]: Can\'t keep up!')).toBe('warn');
+    expect(levelOf("[12:00:00 WARN]: Can't keep up!")).toBe('warn');
     expect(levelOf('[12:00:00 ERROR]: boom')).toBe('error');
     expect(levelOf('\tat net.minecraft.server.Main.main(Main.java:1)')).toBe('error');
     expect(levelOf('[12:00:00 INFO]: Done')).toBe('info');
@@ -172,9 +190,11 @@ test('console tools render inside a server page and filter the buffered output',
     };
 
     const view = render(createElement(host.Wrapper, null, createElement(ConsoleTools, { server, command, overlay })));
+    // The host mounts its router asynchronously; listen only once the tools are on screen.
+    await screen.findByRole('button', { name: 'Warnings' });
     await act(async () => {
-        host.emitWebsocket('console output', '[12:00:00 INFO]: Done\n[12:00:01 WARN]: Can\'t keep up!');
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        host.emitWebsocket('console output', "[12:00:00 INFO]: Done\n[12:00:01 WARN]: Can't keep up!");
+        await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Warnings' }));

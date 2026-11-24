@@ -34,7 +34,9 @@ export function spell(seconds: number): string {
  * the panel's 900-second limit gets an extra warning in between, so no offset ever exceeds it.
  */
 export function planRestart(warnings: readonly number[], template: string): RestartPlan {
-    const marks = [...new Set(warnings.filter((w) => Number.isFinite(w) && w > 0).map((w) => Math.round(w)))].sort((a, b) => b - a);
+    const marks = [...new Set(warnings.filter((w) => Number.isFinite(w) && w > 0).map((w) => Math.round(w)))].sort(
+        (a, b) => b - a
+    );
 
     // Fill gaps the panel cannot wait through with extra warnings.
     const filled: number[] = [];
@@ -118,7 +120,9 @@ export interface Schedule {
 
 interface ScheduleResponse {
     attributes: Omit<Schedule, 'tasks'> & {
-        relationships?: { tasks?: { data: { attributes: { action: string; payload: string; time_offset: number } }[] } };
+        relationships?: {
+            tasks?: { data: { attributes: { action: string; payload: string; time_offset: number } }[] };
+        };
     };
 }
 

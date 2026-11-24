@@ -67,7 +67,7 @@ export function usePlayerTotal(servers: readonly { address: string | null; runni
             retry: false,
         })),
     });
-    if (!livePlayers) return null;
+    if (!livePlayers || targets.length === 0) return null;
 
     return results.reduce<PlayerCount>(
         (sum, r) => ({ online: sum.online + (r.data?.online ?? 0), max: sum.max + (r.data?.max ?? 0) }),

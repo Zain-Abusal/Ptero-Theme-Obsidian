@@ -24,7 +24,12 @@ export default function Terminal({ model, className }: ViewProps<'server.termina
     const server = useCurrentServer();
 
     return (
-        <div className={cn('relative flex w-full flex-col overflow-hidden rounded-xl border border-border bg-terminal', className)}>
+        <div
+            className={cn(
+                'relative flex w-full flex-col overflow-hidden rounded-xl border border-border bg-terminal',
+                className
+            )}
+        >
             <SpinnerOverlay visible={model.loading} size='large' />
             <div className='flex min-h-12 items-center gap-2 border-b border-border/70 py-1.5 pr-2 pl-4'>
                 <TerminalSquare className='size-4 text-muted-foreground' aria-hidden />
@@ -42,7 +47,10 @@ export default function Terminal({ model, className }: ViewProps<'server.termina
                     </Button>
                 </div>
             )}
-            <div ref={setOverlay} className='relative min-h-64 flex-1 overflow-hidden px-3 pt-2 font-mono text-[0.82rem] caret-transparent'>
+            <div
+                ref={setOverlay}
+                className='relative min-h-64 flex-1 overflow-hidden px-3 pt-2 font-mono text-[0.82rem] caret-transparent'
+            >
                 <model.Terminal />
                 {model.scrolledUp && (
                     <button

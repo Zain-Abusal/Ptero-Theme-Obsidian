@@ -386,6 +386,13 @@
         backdrop-filter: blur(6px);
     }
 
+    /* Account sections title themselves on the left, so the form cards drop their own headings. */
+    .obs-account-form [data-ui='card'] > [data-part='header'],
+    .obs-account-form > div > h2,
+    .obs-account-form > div > h3 {
+        display: none;
+    }
+
     /* The terminal sits flush inside its card. */
     [data-ui='card'][data-obs='terminal'] [data-part='body'] {
         padding: 0;

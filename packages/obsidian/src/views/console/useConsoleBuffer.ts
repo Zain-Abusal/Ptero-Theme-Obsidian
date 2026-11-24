@@ -13,7 +13,7 @@ export function useConsoleBuffer(id: string): string[] {
     const enabled = id !== '';
     const [lines, setLines] = useState<string[]>([]);
     const pending = useRef<string[]>([]);
-    const frame = useRef<number | null>(null);
+    const timer = useRef<number | null>(null);
 
     useEffect(() => {
         if (!enabled) return;
@@ -30,19 +30,27 @@ export function useConsoleBuffer(id: string): string[] {
 
     useServerWebsocketEvent('console output', (data) => {
         if (!enabled) return;
-        pending.current.push(...data.split('\n').map(plainLine).filter((l) => l.trim() !== ''));
-        if (frame.current !== null) return;
-        frame.current = window.requestAnimationFrame(() => {
-            frame.current = null;
+        pending.current.push(
+            ...data
+                .split('\n')
+                .map(plainLine)
+                .filter((l) => l.trim() !== '')
+        );
+        if (timer.current !== null) return;
+        timer.current = window.setTimeout(() => {
+            timer.current = null;
             const batch = pending.current;
             pending.current = [];
             setLines((now) => capLines([...now, ...batch], BUFFER));
-        });
+        }, 50);
     });
 
-    useEffect(() => () => {
-        if (frame.current !== null) window.cancelAnimationFrame(frame.current);
-    }, []);
+    useEffect(
+        () => () => {
+            if (timer.current !== null) window.clearTimeout(timer.current);
+        },
+        []
+    );
 
     return lines;
 }

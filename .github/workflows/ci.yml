@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PANEL_REF: v2.0.0-beta.3
+
+jobs:
+  verify:
+    name: Typecheck, test, build and pack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+        with:
+          panel-ref: ${{ env.PANEL_REF }}
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack .pteroext
+        run: npm run pack
+
+      - name: Check the archive
+        run: |
+          set -euo pipefail
+          for f in release/themes/*.pteroext; do
+            echo "::group::$f"
+            unzip -l "$f"
+            unzip -l "$f" | grep -q ' extension.json$'
+            unzip -l "$f" | grep -q ' dist/client.js$'
+            unzip -l "$f" | grep -q ' dist/theme.css$'
+            ! unzip -l "$f" | grep -q '\.map$'
+            echo "::endgroup::"
+          done
+
+      - name: Upload the theme for testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: obsidian-pteroext-${{ github.sha }}
+          path: release/themes/*.pteroext
+          if-no-files-found: error
+          retention-days: 14

@@ -37,7 +37,8 @@ export default function ConsoleTools({
         setOpen(true);
     };
 
-    const copy = () => navigator.clipboard?.writeText(text()).then(() => toast.success(`Copied ${lines.length} lines.`));
+    const copy = () =>
+        navigator.clipboard?.writeText(text()).then(() => toast.success(`Copied ${lines.length} lines.`));
 
     const download = () => {
         const url = URL.createObjectURL(new Blob([text()], { type: 'text/plain' }));
@@ -59,7 +60,11 @@ export default function ConsoleTools({
     };
 
     const popOut = () =>
-        window.open(window.location.href, `obsidian-console-${server.attributes.identifier}`, 'popup,width=980,height=680');
+        window.open(
+            window.location.href,
+            `obsidian-console-${server.attributes.identifier}`,
+            'popup,width=980,height=680'
+        );
 
     return (
         <>
@@ -79,12 +84,21 @@ export default function ConsoleTools({
                     </label>
                 ) : (
                     <Tooltip content='Search'>
-                        <button type='button' aria-label='Search console output' onClick={() => show(filter)} className={iconButton}>
+                        <button
+                            type='button'
+                            aria-label='Search console output'
+                            onClick={() => show(filter)}
+                            className={iconButton}
+                        >
                             <Search className='size-4' aria-hidden />
                         </button>
                     </Tooltip>
                 )}
-                <div role='group' aria-label='Show' className='hidden items-center rounded-lg border border-border p-0.5 sm:flex'>
+                <div
+                    role='group'
+                    aria-label='Show'
+                    className='hidden items-center rounded-lg border border-border p-0.5 sm:flex'
+                >
                     {(
                         [
                             ['all', 'All lines'],
@@ -99,7 +113,9 @@ export default function ConsoleTools({
                             onClick={() => (open && filter === value && value === 'all' ? setOpen(false) : show(value))}
                             className={cn(
                                 'rounded-md px-2 py-1 text-[0.7rem] font-semibold transition',
-                                open && filter === value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+                                open && filter === value
+                                    ? 'bg-muted text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
                             )}
                         >
                             {label}
@@ -108,7 +124,12 @@ export default function ConsoleTools({
                 </div>
                 {open && (
                     <Tooltip content='Back to the live console'>
-                        <button type='button' aria-label='Back to the live console' onClick={() => setOpen(false)} className={iconButton}>
+                        <button
+                            type='button'
+                            aria-label='Back to the live console'
+                            onClick={() => setOpen(false)}
+                            className={iconButton}
+                        >
                             <SquareTerminal className='size-4' aria-hidden />
                         </button>
                     </Tooltip>
@@ -139,12 +160,24 @@ export default function ConsoleTools({
                     </DropdownMenu>
                 )}
                 <Tooltip content='Copy output'>
-                    <button type='button' aria-label='Copy console output' onClick={copy} disabled={lines.length === 0} className={iconButton}>
+                    <button
+                        type='button'
+                        aria-label='Copy console output'
+                        onClick={copy}
+                        disabled={lines.length === 0}
+                        className={iconButton}
+                    >
                         <Copy className='size-4' aria-hidden />
                     </button>
                 </Tooltip>
                 <Tooltip content='Download log'>
-                    <button type='button' aria-label='Download console output' onClick={download} disabled={lines.length === 0} className={iconButton}>
+                    <button
+                        type='button'
+                        aria-label='Download console output'
+                        onClick={download}
+                        disabled={lines.length === 0}
+                        className={iconButton}
+                    >
                         <Download className='size-4' aria-hidden />
                     </button>
                 </Tooltip>
@@ -160,7 +193,12 @@ export default function ConsoleTools({
                     </button>
                 </Tooltip>
                 <Tooltip content='Pop out'>
-                    <button type='button' aria-label='Open the console in a new window' onClick={popOut} className={cn(iconButton, 'hidden sm:grid')}>
+                    <button
+                        type='button'
+                        aria-label='Open the console in a new window'
+                        onClick={popOut}
+                        className={cn(iconButton, 'hidden sm:grid')}
+                    >
                         <ExternalLink className='size-4' aria-hidden />
                     </button>
                 </Tooltip>
@@ -179,8 +217,8 @@ export default function ConsoleTools({
                     </a>
                 ) : (
                     <p className='text-sm text-muted-foreground'>
-                        The last {lines.length} lines are uploaded to mclo.gs, a public log host. They leave the panel and may include player names and
-                        IP addresses.
+                        The last {lines.length} lines are uploaded to mclo.gs, a public log host. They leave the panel
+                        and may include player names and IP addresses.
                     </p>
                 )}
                 <Dialog.Footer>

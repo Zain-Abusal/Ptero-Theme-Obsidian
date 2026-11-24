@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Archive, CircleCheck, Download, Earth, Flame, Map as MapIcon, Moon, Play, RotateCcw, TriangleAlert } from 'lucide-react';
+import {
+    Archive,
+    CircleCheck,
+    Download,
+    Earth,
+    Flame,
+    Map as MapIcon,
+    Moon,
+    Play,
+    RotateCcw,
+    TriangleAlert,
+} from 'lucide-react';
 import {
     Alert,
     Badge,
@@ -25,7 +36,8 @@ import Page, { Panel, attempt } from '../ui/Page';
 
 function useRunning(uuid: string) {
     const { data } = useServerResources(uuid, (r) => r);
-    const state = (data as unknown as { attributes?: { current_state?: string } } | undefined)?.attributes?.current_state;
+    const state = (data as unknown as { attributes?: { current_state?: string } } | undefined)?.attributes
+        ?.current_state;
     return state !== undefined && state !== 'offline' && state !== 'stopped';
 }
 
@@ -34,13 +46,19 @@ function Pregenerate({ world, running }: { world: string; running: boolean }) {
     const { api, id } = useToolkit();
     const plugins = useDirectory('/plugins');
     const [radius, setRadius] = useState(3000);
-    const has = looksInstalled((plugins.data ?? []).map((e) => e.name), 'chunky');
+    const has = looksInstalled(
+        (plugins.data ?? []).map((e) => e.name),
+        'chunky'
+    );
 
     if (!has) {
         return (
             <p className='text-sm text-muted-foreground'>
                 Install{' '}
-                <PanelLink destination={{ to: '/server/$id/mc/plugins' as '/server/$id', params: { id } }} className='font-semibold text-foreground'>
+                <PanelLink
+                    destination={{ to: '/server/$id/mc/plugins' as '/server/$id', params: { id } }}
+                    className='font-semibold text-foreground'
+                >
                     Chunky from Plugins
                 </PanelLink>{' '}
                 to generate chunks ahead of time, so exploring does not lag.
@@ -78,14 +96,24 @@ function Pregenerate({ world, running }: { world: string; running: boolean }) {
                 <Button
                     size='small'
                     disabled={!running || radius < 100}
-                    onClick={() => send([`chunky world ${world}`, `chunky radius ${radius}`, 'chunky start'], `Generating ${world} out to ${radius} blocks. Progress shows in the console.`)}
+                    onClick={() =>
+                        send(
+                            [`chunky world ${world}`, `chunky radius ${radius}`, 'chunky start'],
+                            `Generating ${world} out to ${radius} blocks. Progress shows in the console.`
+                        )
+                    }
                 >
                     <Play className='size-3.5' aria-hidden /> Start
                 </Button>
                 <Button size='small' color='grey' disabled={!running} onClick={() => send(['chunky pause'], 'Paused.')}>
                     Pause
                 </Button>
-                <Button size='small' color='grey' disabled={!running} onClick={() => send(['chunky continue'], 'Continuing.')}>
+                <Button
+                    size='small'
+                    color='grey'
+                    disabled={!running}
+                    onClick={() => send(['chunky continue'], 'Continuing.')}
+                >
                     Continue
                 </Button>
             </div>
@@ -125,7 +153,11 @@ export default function WorldsScreen() {
     const activate = (world: World) =>
         run(
             `active:${world.name}`,
-            () => api.write('/server.properties', serializeProperties(data.data!.props, { ...data.data!.props.values, 'level-name': world.name })),
+            () =>
+                api.write(
+                    '/server.properties',
+                    serializeProperties(data.data!.props, { ...data.data!.props.values, 'level-name': world.name })
+                ),
             `${world.name} loads on the next start.`
         );
 
@@ -149,7 +181,9 @@ export default function WorldsScreen() {
                 if (hardDelete) await api.remove('/', folders);
                 else for (const folder of folders) await api.rename('/', folder, asideName(folder));
             },
-            hardDelete ? `${world.name} deleted. A fresh world generates on the next start.` : `${world.name} set aside. A fresh world generates on the next start.`
+            hardDelete
+                ? `${world.name} deleted. A fresh world generates on the next start.`
+                : `${world.name} set aside. A fresh world generates on the next start.`
         );
         setResetting(null);
         setHardDelete(false);
@@ -164,7 +198,8 @@ export default function WorldsScreen() {
                 <Alert type='warning'>
                     <span className='flex items-center gap-2'>
                         <TriangleAlert className='size-4 shrink-0' aria-hidden />
-                        Stop the server before switching, backing up or resetting a world. Minecraft keeps writing to it while it runs.
+                        Stop the server before switching, backing up or resetting a world. Minecraft keeps writing to it
+                        while it runs.
                     </span>
                 </Alert>
             )}
@@ -177,7 +212,10 @@ export default function WorldsScreen() {
                             <Earth />
                         </EmptyMedia>
                         <EmptyTitle>No worlds yet</EmptyTitle>
-                        <EmptyDescription>Start the server once and Minecraft creates "{level ?? 'world'}". Or bring one in with the Importer.</EmptyDescription>
+                        <EmptyDescription>
+                            Start the server once and Minecraft creates "{level ?? 'world'}". Or bring one in with the
+                            Importer.
+                        </EmptyDescription>
                     </EmptyHeader>
                 </Empty>
             )}
@@ -185,7 +223,10 @@ export default function WorldsScreen() {
                 {worlds.map((world) => {
                     const active = world.name === level;
                     return (
-                        <li key={world.name} className='flex flex-col gap-4 rounded-xl border border-border bg-card p-5'>
+                        <li
+                            key={world.name}
+                            className='flex flex-col gap-4 rounded-xl border border-border bg-card p-5'
+                        >
                             <div className='flex items-start gap-3'>
                                 <span className='grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-muted'>
                                     <MapIcon className='size-5' aria-hidden />
@@ -213,13 +254,20 @@ export default function WorldsScreen() {
                                         )}
                                     </p>
                                     {active && data.data?.seed && (
-                                        <p className='mt-2 truncate font-mono text-xs text-muted-foreground'>seed {data.data.seed}</p>
+                                        <p className='mt-2 truncate font-mono text-xs text-muted-foreground'>
+                                            seed {data.data.seed}
+                                        </p>
                                     )}
                                 </div>
                             </div>
                             <div className='flex flex-wrap gap-2'>
                                 {!active && (
-                                    <Button size='small' onClick={() => activate(world)} isLoading={busy === `active:${world.name}`} disabled={busy !== null}>
+                                    <Button
+                                        size='small'
+                                        onClick={() => activate(world)}
+                                        isLoading={busy === `active:${world.name}`}
+                                        disabled={busy !== null}
+                                    >
                                         Make active
                                     </Button>
                                 )}
@@ -235,13 +283,24 @@ export default function WorldsScreen() {
                                 <Button
                                     size='small'
                                     color='grey'
-                                    onClick={() => run(`backup:${world.name}`, () => archive(world), `Backed up ${world.name} to an archive in the server root.`)}
+                                    onClick={() =>
+                                        run(
+                                            `backup:${world.name}`,
+                                            () => archive(world),
+                                            `Backed up ${world.name} to an archive in the server root.`
+                                        )
+                                    }
                                     isLoading={busy === `backup:${world.name}`}
                                     disabled={busy !== null}
                                 >
                                     <Archive className='size-3.5' aria-hidden /> Back up
                                 </Button>
-                                <Button size='small' color='red' onClick={() => setResetting(world)} disabled={busy !== null}>
+                                <Button
+                                    size='small'
+                                    color='red'
+                                    onClick={() => setResetting(world)}
+                                    disabled={busy !== null}
+                                >
                                     <RotateCcw className='size-3.5' aria-hidden /> Reset
                                 </Button>
                             </div>
@@ -264,8 +323,10 @@ export default function WorldsScreen() {
             >
                 <p className='text-sm text-muted-foreground'>
                     A fresh world generates on the next start
-                    {resetting?.name === level && data.data?.seed ? ` from seed ${data.data.seed}` : ''}. By default the old one is renamed to{' '}
-                    <code className='font-mono'>{resetting ? asideName(resetting.name) : ''}</code>, so you can bring it back.
+                    {resetting?.name === level && data.data?.seed ? ` from seed ${data.data.seed}` : ''}. By default the
+                    old one is renamed to{' '}
+                    <code className='font-mono'>{resetting ? asideName(resetting.name) : ''}</code>, so you can bring it
+                    back.
                 </p>
                 <label className='mt-4 flex items-center gap-2 text-sm'>
                     <Checkbox checked={hardDelete} onChange={setHardDelete} />
@@ -275,7 +336,12 @@ export default function WorldsScreen() {
                     <Button color='grey' onClick={() => setResetting(null)}>
                         Cancel
                     </Button>
-                    <Button color='red' onClick={() => resetting && reset(resetting)} isLoading={busy?.startsWith('reset:')} disabled={running}>
+                    <Button
+                        color='red'
+                        onClick={() => resetting && reset(resetting)}
+                        isLoading={busy?.startsWith('reset:')}
+                        disabled={running}
+                    >
                         {hardDelete ? 'Delete and reset' : 'Reset'}
                     </Button>
                 </Dialog.Footer>

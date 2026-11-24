@@ -54,7 +54,7 @@ const listRow = skin('ListRow', {
 });
 
 const input = skin('Input', {
-    root: (state, below) => below('rounded-lg border-input-border bg-input focus:ring-ring'),
+    root: (state, below) => below('rounded-lg border border-input-border bg-input focus:ring-2 focus:ring-ring'),
 });
 
 const textArea = skin('TextArea', {
@@ -63,6 +63,12 @@ const textArea = skin('TextArea', {
 
 const switchSkin = skin('Switch', {
     control: (state, below) => below('data-checked:bg-success'),
+    label: (state, below) => below('normal-case tracking-normal text-sm font-medium text-foreground'),
+});
+
+/** Form labels in sentence case: quieter than the shouted caps of classic. */
+const label = skin('Label', {
+    root: (state, below) => below('normal-case tracking-normal text-[0.8rem] font-semibold text-foreground/85'),
 });
 
 const progress = skin('ProgressBar', {
@@ -107,6 +113,7 @@ export const obsidianSkins: ThemeSkins = {
     Input: input,
     TextArea: textArea,
     Switch: switchSkin,
+    Label: label,
     ProgressBar: progress,
     Dialog: dialog,
     DropdownMenu: dropdown,

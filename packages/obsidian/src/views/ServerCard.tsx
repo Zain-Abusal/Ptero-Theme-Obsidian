@@ -71,7 +71,7 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                 </div>
             </div>
             {model.address && (
-                <span className='hidden font-mono text-xs text-muted-foreground xl:block'>{model.address}</span>
+                <span className='hidden w-40 truncate text-right font-mono text-xs text-muted-foreground xl:block'>{model.address}</span>
             )}
             {ready && (
                 <div className='flex items-center gap-5'>
@@ -112,6 +112,7 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                         <Pin className={cn('size-3.5', pinned && 'fill-current')} aria-hidden />
                     </button>
                 </Tooltip>
+                {!ready && <span className='size-9' aria-hidden />}
                 {ready &&
                     (running
                         ? permissions.stop && (

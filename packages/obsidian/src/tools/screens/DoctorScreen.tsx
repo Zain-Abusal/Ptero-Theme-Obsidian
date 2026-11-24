@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, CircleCheck, ExternalLink, FileWarning, RefreshCw, Share2, Sparkles, Stethoscope } from 'lucide-react';
+import {
+    ArrowRight,
+    CircleCheck,
+    ExternalLink,
+    FileWarning,
+    RefreshCw,
+    Share2,
+    Sparkles,
+    Stethoscope,
+} from 'lucide-react';
 import { Alert, Badge, Button, PanelLink, Spinner, cn, fromNow, http, toast } from '@pterodactyl/sdk';
 import { analyseLog, diagnose, shareLog, tail, type Analysis, type Finding } from '../lib/doctor';
 import { useToolkit } from '../lib/useToolkit';
@@ -26,7 +35,9 @@ function useSources() {
                 api.readOrNull('/logs/latest.log'),
                 api.listOrEmpty('/crash-reports'),
                 http
-                    .get<{ attributes: { lines: string[] } }>(`/api/client/servers/${id}/logs`, { params: { lines: 100 } })
+                    .get<{ attributes: { lines: string[] } }>(`/api/client/servers/${id}/logs`, {
+                        params: { lines: 100 },
+                    })
                     .then((r) => r.data.attributes.lines.join('\n'))
                     .catch(() => null),
             ]);
@@ -87,7 +98,11 @@ export default function DoctorScreen() {
     const [busy, setBusy] = useState<'share' | 'analyse' | null>(null);
 
     const text =
-        source === 'crash' ? (sources.data?.crash?.text ?? null) : source === 'console' ? (sources.data?.console ?? null) : (sources.data?.log ?? null);
+        source === 'crash'
+            ? (sources.data?.crash?.text ?? null)
+            : source === 'console'
+              ? (sources.data?.console ?? null)
+              : (sources.data?.log ?? null);
     const findings = text ? diagnose(text) : [];
 
     const share = async () => {
@@ -147,7 +162,9 @@ export default function DoctorScreen() {
             {sources.isLoading && <Spinner size='large' centered />}
             {!sources.isLoading && !text && (
                 <Alert type='info'>
-                    {source === 'crash' ? 'No crash reports. The server has not crashed hard.' : 'Nothing to read yet. Start the server once.'}
+                    {source === 'crash'
+                        ? 'No crash reports. The server has not crashed hard.'
+                        : 'Nothing to read yet. Start the server once.'}
                 </Alert>
             )}
 
@@ -162,7 +179,8 @@ export default function DoctorScreen() {
                                 <div>
                                     <p className='font-bold'>No known problems found</p>
                                     <p className='text-sm text-muted-foreground'>
-                                        Nothing in this {source === 'crash' ? 'report' : 'log'} matches a problem the doctor knows. Try a deep analysis.
+                                        Nothing in this {source === 'crash' ? 'report' : 'log'} matches a problem the
+                                        doctor knows. Try a deep analysis.
                                     </p>
                                 </div>
                             </div>
@@ -180,7 +198,9 @@ export default function DoctorScreen() {
                         )}
                         {analysis && (
                             <Panel title='Deep analysis (mclo.gs)' className='mt-6'>
-                                {analysis.problems.length === 0 && <p className='text-sm text-muted-foreground'>mclo.gs found no problems either.</p>}
+                                {analysis.problems.length === 0 && (
+                                    <p className='text-sm text-muted-foreground'>mclo.gs found no problems either.</p>
+                                )}
                                 <ul className='flex flex-col gap-3'>
                                     {analysis.problems.map((p, i) => (
                                         <li key={i} className='text-sm'>
@@ -207,16 +227,29 @@ export default function DoctorScreen() {
                         )}
                     </div>
                     <div className='flex flex-col gap-4'>
-                        <Panel title='Get more help' aside={<Stethoscope className='size-4 text-muted-foreground' aria-hidden />}>
+                        <Panel
+                            title='Get more help'
+                            aside={<Stethoscope className='size-4 text-muted-foreground' aria-hidden />}
+                        >
                             <p className='text-sm text-muted-foreground'>
-                                These send this {source === 'crash' ? 'report' : 'log'} to mclo.gs, a public log host. It leaves the panel and may include
-                                player names and IP addresses.
+                                These send this {source === 'crash' ? 'report' : 'log'} to mclo.gs, a public log host.
+                                It leaves the panel and may include player names and IP addresses.
                             </p>
                             <div className='mt-4 flex flex-col gap-2'>
-                                <Button color='grey' onClick={analyse} isLoading={busy === 'analyse'} disabled={busy !== null}>
+                                <Button
+                                    color='grey'
+                                    onClick={analyse}
+                                    isLoading={busy === 'analyse'}
+                                    disabled={busy !== null}
+                                >
                                     <Sparkles className='size-4' aria-hidden /> Deep analysis
                                 </Button>
-                                <Button color='grey' onClick={share} isLoading={busy === 'share'} disabled={busy !== null}>
+                                <Button
+                                    color='grey'
+                                    onClick={share}
+                                    isLoading={busy === 'share'}
+                                    disabled={busy !== null}
+                                >
                                     <Share2 className='size-4' aria-hidden /> Share log
                                 </Button>
                             </div>

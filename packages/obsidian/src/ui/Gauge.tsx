@@ -43,7 +43,7 @@ export default function Gauge({
                     opacity={value === null ? 0.5 : 1}
                 />
             </svg>
-            <div className='min-w-0 leading-tight'>
+            <div className='w-[4.25rem] min-w-0 leading-tight'>
                 <p className='obs-eyebrow text-[0.625rem]'>{label}</p>
                 <p className='obs-num truncate text-xs font-semibold text-foreground'>{text}</p>
             </div>

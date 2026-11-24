@@ -23,7 +23,10 @@ export function leaves(doc: Document): Leaf[] {
             const key = isScalar(pair.key) ? String(pair.key.value) : String(pair.key);
             const at = [...path, key];
             if (isMap(pair.value)) walk(pair.value, at);
-            else if (isScalar(pair.value) && (pair.value.value === null || ['string', 'number', 'boolean'].includes(typeof pair.value.value))) {
+            else if (
+                isScalar(pair.value) &&
+                (pair.value.value === null || ['string', 'number', 'boolean'].includes(typeof pair.value.value))
+            ) {
                 out.push({
                     path: at,
                     key,
@@ -43,7 +46,10 @@ export function leaves(doc: Document): Leaf[] {
 export const pathKey = (path: readonly (string | number)[]) => path.join('\u0000');
 
 /** Writes changed values into a copy of the document and returns the text. Comments stay. */
-export function applyChanges(text: string, changes: ReadonlyMap<string, { path: (string | number)[]; value: Value }>): string {
+export function applyChanges(
+    text: string,
+    changes: ReadonlyMap<string, { path: (string | number)[]; value: Value }>
+): string {
     const doc = parseYaml(text);
     for (const { path, value } of changes.values()) doc.setIn(path, value);
     return doc.toString({ lineWidth: 0 });

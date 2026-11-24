@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, FileCode2, RotateCcw, Save, Search } from 'lucide-react';
-import { Alert, Button, PanelLink, Spinner, Switch, cn, toast } from '@pterodactyl/sdk';
+import { ChevronDown, RotateCcw, Save, Search } from 'lucide-react';
+import { Alert, Button, Spinner, Switch, cn, toast } from '@pterodactyl/sdk';
 import {
     COLORS,
     FIELDS,
@@ -19,6 +19,9 @@ import Page, { Eyebrow, attempt } from '../ui/Page';
 const FILE = '/server.properties';
 
 /** Other config files, opened in the panel's own editor. */
+/** The YAML editor (and the yaml library) loads only when one of these tabs opens. */
+const YamlEditor = lazy(() => import('../lib/yaml-editor'));
+
 const CONFIGS = [
     { label: 'Bukkit', file: '/bukkit.yml' },
     { label: 'Spigot', file: '/spigot.yml' },
@@ -34,13 +37,18 @@ function Control({ field, value, onChange }: { field: Field; value: string; onCh
         'h-9 w-full rounded-lg border border-input-border bg-input px-3 text-sm outline-none focus:ring-2 focus:ring-ring';
 
     if (kind.type === 'toggle') {
-        return <Switch checked={bool(value)} onChange={() => onChange(String(!bool(value)))} aria-label={field.label} />;
+        return (
+            <Switch checked={bool(value)} onChange={() => onChange(String(!bool(value)))} aria-label={field.label} />
+        );
     }
     if (kind.type === 'select') {
         const options = Object.entries(kind.options);
         return (
             <div className='flex flex-wrap gap-1'>
-                {(options.some(([k]) => k === value) || !value ? options : [...options, [value, value] as [string, string]]).map(([k, label]) => (
+                {(options.some(([k]) => k === value) || !value
+                    ? options
+                    : [...options, [value, value] as [string, string]]
+                ).map(([k, label]) => (
                     <button
                         key={k}
                         type='button'
@@ -48,7 +56,9 @@ function Control({ field, value, onChange }: { field: Field; value: string; onCh
                         onClick={() => onChange(k)}
                         className={cn(
                             'rounded-full border px-2.5 py-1 text-xs font-semibold',
-                            value === k ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted'
+                            value === k
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-border hover:bg-muted'
                         )}
                     >
                         {label}
@@ -70,7 +80,9 @@ function Control({ field, value, onChange }: { field: Field; value: string; onCh
             />
         );
     }
-    return <input value={value} onChange={(e) => onChange(e.target.value)} aria-label={field.label} className={input} />;
+    return (
+        <input value={value} onChange={(e) => onChange(e.target.value)} aria-label={field.label} className={input} />
+    );
 }
 
 /** A big tile for a common setting, like the screenshot's PLAYER SLOTS or WHITELIST. */
@@ -109,7 +121,15 @@ function Tile({ field, value, onChange }: { field: Field; value: string; onChang
 }
 
 /** The MOTD as the server list shows it, with colour codes, and a palette that inserts them. */
-function Motd({ value, onChange, maxPlayers }: { value: string; onChange: (value: string) => void; maxPlayers: string }) {
+function Motd({
+    value,
+    onChange,
+    maxPlayers,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+    maxPlayers: string;
+}) {
     const { server } = useToolkit();
     const lines = value.split(/\\n|\n/).slice(0, 2);
 
@@ -131,7 +151,10 @@ function Motd({ value, onChange, maxPlayers }: { value: string; onChange: (value
                                         color: span.color ?? undefined,
                                         fontWeight: span.bold ? 700 : undefined,
                                         fontStyle: span.italic ? 'italic' : undefined,
-                                        textDecoration: [span.underline && 'underline', span.strike && 'line-through'].filter(Boolean).join(' ') || undefined,
+                                        textDecoration:
+                                            [span.underline && 'underline', span.strike && 'line-through']
+                                                .filter(Boolean)
+                                                .join(' ') || undefined,
                                     }}
                                 >
                                     {span.text}
@@ -191,6 +214,7 @@ export default function PropertiesScreen() {
         queryFn: async () => parseProperties((await api.readOrNull(FILE)) ?? ''),
     });
     const [values, setValues] = useState<Record<string, string>>({});
+    const [tab, setTab] = useState('server');
     const [term, setTerm] = useState('');
     const [changesOnly, setChangesOnly] = useState(false);
     const [open, setOpen] = useState<string[]>(['Basics']);
@@ -218,20 +242,33 @@ export default function PropertiesScreen() {
             Object.keys(values)
                 .filter((k) => !fieldByKey.has(k))
                 .sort()
-                .map((key) => ({ key, label: key, help: '', group: 'Extras' as const, kind: { type: 'text' as const } })),
+                .map((key) => ({
+                    key,
+                    label: key,
+                    help: '',
+                    group: 'Extras' as const,
+                    kind: { type: 'text' as const },
+                })),
         [values]
     );
 
     const save = async () => {
         if (!file.data) return;
         setSaving(true);
-        await attempt(() => api.write(FILE, serializeProperties(file.data!, values)), 'Saved. Restart the server to apply.', toast);
+        await attempt(
+            () => api.write(FILE, serializeProperties(file.data!, values)),
+            'Saved. Restart the server to apply.',
+            toast
+        );
         await client.invalidateQueries({ queryKey: ['obsidian-mc', id, 'properties'] });
         setSaving(false);
     };
 
     const sections = [
-        ...GROUPS.map((group) => ({ name: group, fields: FIELDS.filter((f) => f.group === group && f.key !== 'motd' && f.key in values) })),
+        ...GROUPS.map((group) => ({
+            name: group,
+            fields: FIELDS.filter((f) => f.group === group && f.key !== 'motd' && f.key in values),
+        })),
         { name: 'Advanced', fields: advanced },
     ];
 
@@ -240,27 +277,43 @@ export default function PropertiesScreen() {
             title='Properties'
             description='Every server setting in plain words, with search and undo.'
             actions={
-                <div className='flex gap-2'>
-                    <Button color='grey' disabled={changed.length === 0 || saving} onClick={() => setValues({ ...original })}>
-                        <RotateCcw className='size-4' aria-hidden /> Undo{changed.length > 0 && ` ${changed.length}`}
-                    </Button>
-                    <Button disabled={changed.length === 0} isLoading={saving} onClick={save}>
-                        <Save className='size-4' aria-hidden /> Save
-                    </Button>
-                </div>
+                tab === 'server' && (
+                    <div className='flex gap-2'>
+                        <Button
+                            color='grey'
+                            disabled={changed.length === 0 || saving}
+                            onClick={() => setValues({ ...original })}
+                        >
+                            <RotateCcw className='size-4' aria-hidden /> Undo
+                            {changed.length > 0 && ` ${changed.length}`}
+                        </Button>
+                        <Button disabled={changed.length === 0} isLoading={saving} onClick={save}>
+                            <Save className='size-4' aria-hidden /> Save
+                        </Button>
+                    </div>
+                )
             }
         >
             <div className='flex flex-wrap items-center gap-2'>
-                <span className='rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground'>Server</span>
-                {CONFIGS.map((c) => (
-                    <PanelLink
-                        key={c.file}
-                        destination={{ to: '/server/$id/files/$action', params: { id, action: 'edit' }, hash: c.file }}
-                        className='flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground no-underline hover:text-foreground'
-                    >
-                        <FileCode2 className='size-3.5' aria-hidden /> {c.label}
-                    </PanelLink>
-                ))}
+                <div role='tablist' aria-label='Config file' className='flex flex-wrap gap-1'>
+                    {[{ label: 'Server', file: 'server' }, ...CONFIGS].map((c) => (
+                        <button
+                            key={c.file}
+                            type='button'
+                            role='tab'
+                            aria-selected={tab === c.file}
+                            onClick={() => setTab(c.file)}
+                            className={cn(
+                                'rounded-full px-3.5 py-1.5 text-xs font-semibold transition',
+                                tab === c.file
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            {c.label}
+                        </button>
+                    ))}
+                </div>
                 <label className='ml-auto flex h-10 w-full items-center gap-2 rounded-full border border-border bg-card px-4 sm:w-72'>
                     <Search className='size-4 text-muted-foreground' aria-hidden />
                     <input
@@ -284,64 +337,105 @@ export default function PropertiesScreen() {
                 </button>
             </div>
 
-            {file.isLoading && <Spinner size='large' centered />}
-            {file.data && Object.keys(file.data.values).length === 0 && (
-                <Alert type='info'>No server.properties yet. Start the server once and Minecraft writes it.</Alert>
+            {tab !== 'server' && (
+                <Suspense fallback={<Spinner size='large' centered />}>
+                    <YamlEditor file={tab} term={term} changesOnly={changesOnly} />
+                </Suspense>
             )}
 
-            {file.data && !term && !changesOnly && 'motd' in values && (
+            {tab === 'server' && (
                 <>
-                    <Motd value={values.motd ?? ''} onChange={set('motd')} maxPlayers={values['max-players'] ?? ''} />
-                    <div className='grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5'>
-                        {QUICK.filter((k) => k in values).map((key) => (
-                            <Tile key={key} field={fieldByKey.get(key)!} value={values[key] ?? ''} onChange={set(key)} />
-                        ))}
+                    {file.isLoading && <Spinner size='large' centered />}
+                    {file.data && Object.keys(file.data.values).length === 0 && (
+                        <Alert type='info'>
+                            No server.properties yet. Start the server once and Minecraft writes it.
+                        </Alert>
+                    )}
+
+                    {file.data && !term && !changesOnly && 'motd' in values && (
+                        <>
+                            <Motd
+                                value={values.motd ?? ''}
+                                onChange={set('motd')}
+                                maxPlayers={values['max-players'] ?? ''}
+                            />
+                            <div className='grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5'>
+                                {QUICK.filter((k) => k in values).map((key) => (
+                                    <Tile
+                                        key={key}
+                                        field={fieldByKey.get(key)!}
+                                        value={values[key] ?? ''}
+                                        onChange={set(key)}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    <div className='flex flex-col gap-2.5'>
+                        {sections.map(({ name, fields }) => {
+                            const shown = fields.filter(matches);
+                            if (shown.length === 0) return null;
+                            const expanded = term !== '' || changesOnly || open.includes(name);
+                            return (
+                                <section key={name} className='rounded-xl border border-border bg-card'>
+                                    <button
+                                        type='button'
+                                        aria-expanded={expanded}
+                                        onClick={() =>
+                                            setOpen(expanded ? open.filter((g) => g !== name) : [...open, name])
+                                        }
+                                        className='flex w-full items-center gap-3 px-5 py-4 text-left'
+                                    >
+                                        <span className='font-bold'>{name}</span>
+                                        <span className='text-xs text-muted-foreground'>{shown.length} settings</span>
+                                        <ChevronDown
+                                            className={cn(
+                                                'ml-auto size-4 text-muted-foreground transition',
+                                                expanded && 'rotate-180'
+                                            )}
+                                            aria-hidden
+                                        />
+                                    </button>
+                                    {expanded && (
+                                        <ul className='divide-y divide-border border-t border-border'>
+                                            {shown.map((field) => (
+                                                <li
+                                                    key={field.key}
+                                                    className='grid items-center gap-3 px-5 py-3 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)]'
+                                                >
+                                                    <div className='min-w-0'>
+                                                        <p className='flex items-center gap-2 text-sm font-semibold'>
+                                                            {field.label}
+                                                            {changed.includes(field.key) && (
+                                                                <span
+                                                                    className='size-1.5 rounded-full bg-warning'
+                                                                    aria-label='changed'
+                                                                />
+                                                            )}
+                                                        </p>
+                                                        <p className='text-xs text-muted-foreground'>
+                                                            {field.help && `${field.help} `}
+                                                            <code className='font-mono opacity-70'>{field.key}</code>
+                                                        </p>
+                                                    </div>
+                                                    <div className='flex md:justify-end'>
+                                                        <Control
+                                                            field={field}
+                                                            value={values[field.key] ?? ''}
+                                                            onChange={set(field.key)}
+                                                        />
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </section>
+                            );
+                        })}
                     </div>
                 </>
             )}
-
-            <div className='flex flex-col gap-2.5'>
-                {sections.map(({ name, fields }) => {
-                    const shown = fields.filter(matches);
-                    if (shown.length === 0) return null;
-                    const expanded = term !== '' || changesOnly || open.includes(name);
-                    return (
-                        <section key={name} className='rounded-xl border border-border bg-card'>
-                            <button
-                                type='button'
-                                aria-expanded={expanded}
-                                onClick={() => setOpen(expanded ? open.filter((g) => g !== name) : [...open, name])}
-                                className='flex w-full items-center gap-3 px-5 py-4 text-left'
-                            >
-                                <span className='font-bold'>{name}</span>
-                                <span className='text-xs text-muted-foreground'>{shown.length} settings</span>
-                                <ChevronDown className={cn('ml-auto size-4 text-muted-foreground transition', expanded && 'rotate-180')} aria-hidden />
-                            </button>
-                            {expanded && (
-                                <ul className='divide-y divide-border border-t border-border'>
-                                    {shown.map((field) => (
-                                        <li key={field.key} className='grid items-center gap-3 px-5 py-3 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)]'>
-                                            <div className='min-w-0'>
-                                                <p className='flex items-center gap-2 text-sm font-semibold'>
-                                                    {field.label}
-                                                    {changed.includes(field.key) && <span className='size-1.5 rounded-full bg-warning' aria-label='changed' />}
-                                                </p>
-                                                <p className='text-xs text-muted-foreground'>
-                                                    {field.help && `${field.help} `}
-                                                    <code className='font-mono opacity-70'>{field.key}</code>
-                                                </p>
-                                            </div>
-                                            <div className='flex md:justify-end'>
-                                                <Control field={field} value={values[field.key] ?? ''} onChange={set(field.key)} />
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </section>
-                    );
-                })}
-            </div>
         </Page>
     );
 }
