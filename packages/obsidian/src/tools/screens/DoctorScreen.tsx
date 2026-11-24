@@ -25,7 +25,6 @@ interface Sources {
     readonly console: string | null;
 }
 
-/** latest.log's tail, the newest crash report, and Wings' recent console lines. */
 function useSources() {
     const { id, api } = useToolkit();
     return useQuery({
@@ -88,7 +87,6 @@ function FindingCard({ finding, id }: { finding: Finding; id: string }) {
     );
 }
 
-/** Reads the latest log and crash report, explains what went wrong, and links to the page that fixes it. */
 export default function DoctorScreen() {
     const { id } = useToolkit();
     const sources = useSources();

@@ -3,8 +3,17 @@ import { Image, KeyRound, Lock, Mail } from 'lucide-react';
 import { Alert, Avatar, Badge, PageContentBlock, useCurrentUser } from '@pterodactyl/sdk';
 import { Slot, View, type ViewProps } from '@pterodactyl/sdk/theme';
 
-/** A settings section: what it is on the left, the panel's own form card on the right. */
-function Section({ icon, title, description, children }: { icon: ReactNode; title: string; description: string; children: ReactNode }) {
+function Section({
+    icon,
+    title,
+    description,
+    children,
+}: {
+    icon: ReactNode;
+    title: string;
+    description: string;
+    children: ReactNode;
+}) {
     return (
         <section className='grid gap-5 border-t border-border py-8 first-of-type:border-t-0 md:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] md:gap-10'>
             <div>
@@ -19,7 +28,6 @@ function Section({ icon, title, description, children }: { icon: ReactNode; titl
     );
 }
 
-/** The account page: a profile header, then each setting as a described section. */
 export default function AccountOverview({ model, className }: ViewProps<'page.account.overview'>) {
     const user = useCurrentUser();
 
@@ -44,10 +52,18 @@ export default function AccountOverview({ model, className }: ViewProps<'page.ac
             </div>
             <Slot name='account.overview.before' />
             <div className='mt-4'>
-                <Section icon={<Lock className='size-4' />} title='Password' description="Pick a long passphrase you don't use anywhere else.">
+                <Section
+                    icon={<Lock className='size-4' />}
+                    title='Password'
+                    description="Pick a long passphrase you don't use anywhere else."
+                >
                     <View name='account.password' />
                 </Section>
-                <Section icon={<Mail className='size-4' />} title='Email address' description='Where we send sign-in alerts and password resets.'>
+                <Section
+                    icon={<Mail className='size-4' />}
+                    title='Email address'
+                    description='Where we send sign-in alerts and password resets.'
+                >
                     <View name='account.email' />
                 </Section>
                 <Section
@@ -58,7 +74,11 @@ export default function AccountOverview({ model, className }: ViewProps<'page.ac
                     <View name='account.twoFactor' />
                 </Section>
                 {model.userAvatarsEnabled && (
-                    <Section icon={<Image className='size-4' />} title='Avatar' description='Shown beside your name across the panel.'>
+                    <Section
+                        icon={<Image className='size-4' />}
+                        title='Avatar'
+                        description='Shown beside your name across the panel.'
+                    >
                         <View name='account.avatar' />
                     </Section>
                 )}

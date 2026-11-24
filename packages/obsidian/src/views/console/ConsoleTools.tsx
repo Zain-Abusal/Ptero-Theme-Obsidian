@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Copy, Download, ExternalLink, History, Search, Share2, SquareTerminal, X } from 'lucide-react';
+import { Copy, Download, Ellipsis, ExternalLink, History, Search, Share2, SquareTerminal, X } from 'lucide-react';
 import { Button, DropdownMenu, Dialog, Tooltip, cn, toast, type SdkServer } from '@pterodactyl/sdk';
 import type { ServerConsoleCommand } from '@pterodactyl/sdk/theme';
 import { shareLog } from '../../tools/lib/doctor';
@@ -10,10 +10,6 @@ import { useConsoleBuffer } from './useConsoleBuffer';
 const iconButton =
     'grid size-8 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-40 aria-pressed:bg-muted aria-pressed:text-foreground';
 
-/**
- * The console header's tools. It owns the text buffer, so new lines re-render only this bar (and the log
- * view while it is open), never the engine's terminal canvas. The log view is portalled over the canvas.
- */
 export default function ConsoleTools({
     server,
     command,
@@ -159,49 +155,28 @@ export default function ConsoleTools({
                         )}
                     </DropdownMenu>
                 )}
-                <Tooltip content='Copy output'>
-                    <button
-                        type='button'
-                        aria-label='Copy console output'
-                        onClick={copy}
-                        disabled={lines.length === 0}
-                        className={iconButton}
-                    >
-                        <Copy className='size-4' aria-hidden />
-                    </button>
-                </Tooltip>
-                <Tooltip content='Download log'>
-                    <button
-                        type='button'
-                        aria-label='Download console output'
-                        onClick={download}
-                        disabled={lines.length === 0}
-                        className={iconButton}
-                    >
-                        <Download className='size-4' aria-hidden />
-                    </button>
-                </Tooltip>
-                <Tooltip content='Share to mclo.gs'>
-                    <button
-                        type='button'
-                        aria-label='Share console output'
-                        onClick={() => setShared('')}
-                        disabled={lines.length === 0}
-                        className={cn(iconButton, 'hidden sm:grid')}
-                    >
-                        <Share2 className='size-4' aria-hidden />
-                    </button>
-                </Tooltip>
-                <Tooltip content='Pop out'>
-                    <button
-                        type='button'
-                        aria-label='Open the console in a new window'
-                        onClick={popOut}
-                        className={cn(iconButton, 'hidden sm:grid')}
-                    >
-                        <ExternalLink className='size-4' aria-hidden />
-                    </button>
-                </Tooltip>
+                <DropdownMenu
+                    triggerClassName={iconButton}
+                    triggerContent={
+                        <>
+                            <Ellipsis className='size-4' aria-hidden />
+                            <span className='sr-only'>More console actions</span>
+                        </>
+                    }
+                >
+                    <DropdownMenu.Item icon={Copy} disabled={lines.length === 0} onClick={copy}>
+                        Copy output
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item icon={Download} disabled={lines.length === 0} onClick={download}>
+                        Download log
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item icon={Share2} disabled={lines.length === 0} onClick={() => setShared('')}>
+                        Share to mclo.gs
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item icon={ExternalLink} onClick={popOut}>
+                        Pop out
+                    </DropdownMenu.Item>
+                </DropdownMenu>
             </div>
             {open && overlay && createPortal(<LogPanel lines={lines} term={term} filter={filter} />, overlay)}
             <Dialog open={shared !== null} onClose={() => setShared(null)} title='Share console output'>

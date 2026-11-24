@@ -1,11 +1,5 @@
 #!/usr/bin/env node
-/**
- * Packs every package in packages/ into release/themes/ or release/extensions/<id>-<version>.pteroext
- * (matching the panel's Themes and Extensions tabs), the archive the panel's
- * `p:extension:install` takes. It mirrors `php artisan p:extension:pack`: the manifest, composer.json,
- * and the routes, database, resources, dist and vendor folders, without dotfiles, node_modules, tests or
- * source maps. Use the artisan command instead when PHP is available; it also runs the panel's checks.
- */
+
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -34,9 +28,12 @@ for (const name of readdirSync(join(root, 'packages'))) {
 
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
     const problems = [];
-    if (manifest.ui?.entry && !existsSync(join(dir, manifest.ui.entry))) problems.push(`missing ${manifest.ui.entry}; run npm run build`);
-    if (manifest.theme?.stylesheet && !existsSync(join(dir, manifest.theme.stylesheet))) problems.push(`missing ${manifest.theme.stylesheet}`);
-    if (manifest.type === 'theme' && !existsSync(join(dir, 'dist/theme.json'))) problems.push('missing dist/theme.json');
+    if (manifest.ui?.entry && !existsSync(join(dir, manifest.ui.entry)))
+        problems.push(`missing ${manifest.ui.entry}; run npm run build`);
+    if (manifest.theme?.stylesheet && !existsSync(join(dir, manifest.theme.stylesheet)))
+        problems.push(`missing ${manifest.theme.stylesheet}`);
+    if (manifest.type === 'theme' && !existsSync(join(dir, 'dist/theme.json')))
+        problems.push('missing dist/theme.json');
     if (problems.length) {
         console.error(`✗ ${manifest.id}: ${problems.join(', ')}`);
         failed = true;
@@ -52,10 +49,12 @@ for (const name of readdirSync(join(root, 'packages'))) {
     mkdirSync(folder, { recursive: true });
     const archive = join(folder, `${manifest.id}-${manifest.version}.pteroext`);
     rmSync(archive, { force: true });
-    // The manifest's "$schema" points into this workspace's node_modules; the panel ignores it.
+
     execFileSync('zip', ['-q', '-X', archive, ...list], { cwd: dir });
     const size = (statSync(archive).size / 1024).toFixed(0);
-    console.log(`✓ ${manifest.id} ${manifest.version} → ${relative(root, archive)} (${list.length} files, ${size} KiB)`);
+    console.log(
+        `✓ ${manifest.id} ${manifest.version} → ${relative(root, archive)} (${list.length} files, ${size} KiB)`
+    );
 }
 
 process.exit(failed ? 1 : 0);

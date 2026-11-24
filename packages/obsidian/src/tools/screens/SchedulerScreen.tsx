@@ -37,7 +37,6 @@ import Page, { Panel, Step, attempt } from '../ui/Page';
 const WARNING_CHOICES = [1800, 900, 600, 300, 120, 60, 30, 10, 5];
 const short = (s: number) => (s >= 60 ? `${s / 60}m` : `${s}s`);
 
-/** "04:00 · Mon, Wed" for a schedule Obsidian made, reading the restart time back from its tasks. */
 function describe(schedule: Schedule): string {
     const lead = schedule.tasks.reduce((sum, t) => sum + t.time_offset, 0);
     const start = Number(schedule.cron.hour) * 60 + Number(schedule.cron.minute);
@@ -251,7 +250,6 @@ function Creator({ onDone }: { onDone: () => void }) {
     );
 }
 
-/** Automatic restarts with countdown warnings, built on the panel's own schedules. */
 export default function SchedulerScreen() {
     const { id } = useToolkit();
     const client = useQueryClient();

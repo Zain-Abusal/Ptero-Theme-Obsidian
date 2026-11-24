@@ -2,7 +2,6 @@ import { useId, type FormEvent } from 'react';
 import { Button, Input, Label, PanelLink, type FieldModel } from '@pterodactyl/sdk';
 import { Slot, type ViewProps } from '@pterodactyl/sdk/theme';
 
-/** Spreads the engine's `fieldProps` so autocomplete, validation and the disabled state keep working. */
 function Field({ field, label, action }: { field: FieldModel; label: string; action?: React.ReactNode }) {
     const id = useId();
 
@@ -29,7 +28,6 @@ function Field({ field, label, action }: { field: FieldModel; label: string; act
     );
 }
 
-/** The sign-in form. The engine owns the request, the captcha, two-factor and the redirect. */
 export default function LoginPage({ model }: ViewProps<'page.auth.login'>) {
     const { fields, Captcha } = model;
     const submit = (event: FormEvent) => {
@@ -48,7 +46,10 @@ export default function LoginPage({ model }: ViewProps<'page.auth.login'>) {
                 field={fields.password}
                 label='Password'
                 action={
-                    <PanelLink destination={model.forgotPassword} className='text-xs text-muted-foreground no-underline hover:text-foreground'>
+                    <PanelLink
+                        destination={model.forgotPassword}
+                        className='text-xs text-muted-foreground no-underline hover:text-foreground'
+                    >
                         Forgot it?
                     </PanelLink>
                 }

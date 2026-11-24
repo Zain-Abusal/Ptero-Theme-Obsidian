@@ -1,4 +1,3 @@
-/** "2.66 GiB" style sizes. */
 export function bytes(value: number): string {
     if (!Number.isFinite(value) || value <= 0) return '0 B';
     const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];

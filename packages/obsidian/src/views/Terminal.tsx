@@ -15,12 +15,11 @@ function onCommandKey(command: ServerConsoleCommand, event: KeyboardEvent<HTMLIn
     }
 }
 
-/** The console in one framed card: a header, the engine's terminal canvas, and a prompt with a send button. */
 export default function Terminal({ model, className }: ViewProps<'server.terminal'>) {
     const { command } = model;
-    // The log view is portalled over the canvas, which stays mounted underneath.
+
     const [overlay, setOverlay] = useState<HTMLDivElement | null>(null);
-    // The tools need the server page around them; without it (previews, tests) the console still renders.
+
     const server = useCurrentServer();
 
     return (

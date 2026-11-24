@@ -13,18 +13,14 @@ export const SURFACES = [
 
 export type SurfaceId = (typeof SURFACES)[number]['id'];
 
-/** Applies a user's surface over the admin default. Called once by the theme entry, before first paint. */
 export function applyStoredSurface(): void {
     try {
         const raw = window.localStorage.getItem('obsidian:surface');
         const id = raw ? (JSON.parse(raw) as string) : null;
         if (id && SURFACES.some((s) => s.id === id)) document.documentElement.dataset.obsSurface = id;
-    } catch {
-        // Storage blocked: the admin default stays.
-    }
+    } catch {}
 }
 
-/** The user's surface choice; null means the administrator's default. */
 export function useSurface(): [SurfaceId | null, (id: SurfaceId | null) => void] {
     const [stored, setStored] = useStored<SurfaceId | null>('surface', null);
     const fallback = document.documentElement.dataset.obsDefaultSurface;
@@ -43,7 +39,6 @@ export function useSurface(): [SurfaceId | null, (id: SurfaceId | null) => void]
     ];
 }
 
-/** Runs a style change as a cross-fade where the browser supports view transitions and motion is welcome. */
 export function withTransition(change: () => void, origin?: { x: number; y: number }): void {
     const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;

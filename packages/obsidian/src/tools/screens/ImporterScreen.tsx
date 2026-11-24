@@ -7,16 +7,42 @@ import Page, { Panel, Step } from '../ui/Page';
 
 type Preset = 'world' | 'datapack' | 'plugin' | 'file';
 
-const PRESETS: Record<Preset, { label: string; help: string; icon: typeof Globe2; directory: string; extract: boolean }> = {
-    world: { label: 'World', help: 'A zipped world. The current world is kept as a backup folder.', icon: MapIcon, directory: '/', extract: true },
-    datapack: { label: 'Datapack', help: 'A datapack zip, dropped into the world’s datapacks folder.', icon: FileBox, directory: '/world/datapacks', extract: false },
-    plugin: { label: 'Plugin jar', help: 'A plugin jar from any direct link.', icon: Archive, directory: '/plugins', extract: false },
-    file: { label: 'Any file', help: 'Any file or archive, into the folder you choose.', icon: Globe2, directory: '/', extract: true },
+const PRESETS: Record<
+    Preset,
+    { label: string; help: string; icon: typeof Globe2; directory: string; extract: boolean }
+> = {
+    world: {
+        label: 'World',
+        help: 'A zipped world. The current world is kept as a backup folder.',
+        icon: MapIcon,
+        directory: '/',
+        extract: true,
+    },
+    datapack: {
+        label: 'Datapack',
+        help: 'A datapack zip, dropped into the world’s datapacks folder.',
+        icon: FileBox,
+        directory: '/world/datapacks',
+        extract: false,
+    },
+    plugin: {
+        label: 'Plugin jar',
+        help: 'A plugin jar from any direct link.',
+        icon: Archive,
+        directory: '/plugins',
+        extract: false,
+    },
+    file: {
+        label: 'Any file',
+        help: 'Any file or archive, into the folder you choose.',
+        icon: Globe2,
+        directory: '/',
+        extract: true,
+    },
 };
 
 const ARCHIVE = /\.(zip|tar|tar\.gz|tgz|tar\.xz|7z|rar)$/i;
 
-/** The file name a URL points at, for the pulled file. */
 export function fileNameOf(url: string): string {
     try {
         const last = decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).pop() ?? '');
@@ -26,7 +52,6 @@ export function fileNameOf(url: string): string {
     }
 }
 
-/** Bring a world, datapack, plugin or archive onto the server from a link; Wings downloads it directly. */
 export default function ImporterScreen() {
     const { api } = useToolkit();
     const [preset, setPreset] = useState<Preset>('world');
@@ -80,7 +105,9 @@ export default function ImporterScreen() {
                 }
             }
             say('Done.');
-            toast.success(`Imported ${name}.${preset === 'world' ? ' Check the world folder is named "world", then start the server.' : ''}`);
+            toast.success(
+                `Imported ${name}.${preset === 'world' ? ' Check the world folder is named "world", then start the server.' : ''}`
+            );
         } catch (error) {
             say(error instanceof Error ? error.message : 'The import failed.');
             toast.error('The import failed. See the log on the page.');
@@ -106,7 +133,9 @@ export default function ImporterScreen() {
                                         onClick={() => choose(p)}
                                         className={cn(
                                             'flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition',
-                                            preset === p ? 'border-foreground/30 bg-muted' : 'border-border bg-card hover:bg-muted/50'
+                                            preset === p
+                                                ? 'border-foreground/30 bg-muted'
+                                                : 'border-border bg-card hover:bg-muted/50'
                                         )}
                                     >
                                         <Glyph className='size-5' aria-hidden />
@@ -127,7 +156,8 @@ export default function ImporterScreen() {
                             className='h-12 w-full rounded-xl border border-input-border bg-input px-4 font-mono text-sm'
                         />
                         <p className='mt-2 text-xs text-muted-foreground'>
-                            The server downloads it itself, so the link must be public. Google Drive and Dropbox need their direct-download form.
+                            The server downloads it itself, so the link must be public. Google Drive and Dropbox need
+                            their direct-download form.
                         </p>
                     </div>
                     <div>
@@ -145,7 +175,7 @@ export default function ImporterScreen() {
                     <dl className='flex flex-col gap-3 text-sm'>
                         <div className='flex justify-between gap-3'>
                             <dt className='text-muted-foreground'>File</dt>
-                            <dd className='truncate font-mono text-xs'>{name || '—'}</dd>
+                            <dd className='truncate font-mono text-xs'>{name || '-'}</dd>
                         </div>
                         <div className='flex justify-between gap-3'>
                             <dt className='text-muted-foreground'>Into</dt>
@@ -181,7 +211,11 @@ export default function ImporterScreen() {
                         <ol className='mt-4 flex flex-col gap-1 rounded-lg bg-terminal p-3 font-mono text-xs text-terminal-foreground'>
                             {log.map((line, i) => (
                                 <li key={i} className='flex gap-2'>
-                                    {line === 'Done.' ? <Check className='size-3.5 text-success' aria-hidden /> : <span aria-hidden>›</span>}
+                                    {line === 'Done.' ? (
+                                        <Check className='size-3.5 text-success' aria-hidden />
+                                    ) : (
+                                        <span aria-hidden>›</span>
+                                    )}
                                     {line}
                                 </li>
                             ))}

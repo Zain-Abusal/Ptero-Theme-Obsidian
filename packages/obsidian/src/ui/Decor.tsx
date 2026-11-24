@@ -1,4 +1,3 @@
-/** The background decoration; theme.css shows it only while the "decor" setting is on. */
 export default function Decor() {
     return (
         <div className='obs-decor' aria-hidden>

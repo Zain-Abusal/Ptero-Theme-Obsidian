@@ -25,7 +25,6 @@ function Tile({ label, value, fill }: { label: string; value: string; fill?: num
     );
 }
 
-/** The selected server: live usage, its address and what the user may do with it. */
 function Preview({ server, onOpen }: { server: SdkServer; onOpen: (to: 'console' | 'files') => void }) {
     const live = useLive(server.attributes.uuid);
     const address = primaryAddress(server);
@@ -65,9 +64,7 @@ function Preview({ server, onOpen }: { server: SdkServer; onOpen: (to: 'console'
             {address && (
                 <button
                     type='button'
-                    onClick={() =>
-                        navigator.clipboard?.writeText(address).then(() => toast.success('Address copied.'))
-                    }
+                    onClick={() => navigator.clipboard?.writeText(address).then(() => toast.success('Address copied.'))}
                     className='flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-left font-mono text-sm hover:bg-muted'
                 >
                     <span className='min-w-0 flex-1 truncate'>{address}</span>
@@ -99,11 +96,6 @@ function Preview({ server, onOpen }: { server: SdkServer; onOpen: (to: 'console'
     );
 }
 
-/**
- * The server switcher: a pill naming where you are that opens a palette of every server, recent and
- * pinned first, with a live preview of the one under the cursor. Its key (S by default) opens it
- * anywhere, and [ and ] step through servers while inside one.
- */
 export default function Switcher({ area }: { area: AppArea }) {
     const settings = useObsidian();
     const [open, setOpen] = useState(false);
@@ -134,7 +126,7 @@ export default function Switcher({ area }: { area: AppArea }) {
     }, [servers, recent, term, isPinned]);
 
     const meta = useServersMeta(open ? (servers ?? []).map((s) => s.attributes.identifier) : []);
-    // Grouped servers after the ungrouped ones, in their group's order; the list index stays flat for the keys.
+
     const grouped = useMemo(() => {
         const groupOf = (s: SdkServer) => meta[s.attributes.identifier]?.group?.trim() || '';
         return [...ordered].sort((a, b) => {
@@ -159,7 +151,6 @@ export default function Switcher({ area }: { area: AppArea }) {
     const key = settings.switcherKey.trim().toLowerCase();
     const shortcut = useShortcut(key || 's', () => setOpen(true), { when: key !== '' && !open });
 
-    // [ and ] step to the previous and next server while inside one.
     const step = (by: number) => {
         if (area.kind !== 'server' || !servers?.length) return;
         const sorted = [...servers].sort((a, b) => a.attributes.name.localeCompare(b.attributes.name));
@@ -211,7 +202,9 @@ export default function Switcher({ area }: { area: AppArea }) {
                     </span>
                 )}
                 <span className='truncate'>{here ? here.name : 'All servers'}</span>
-                <ChevronDown className={cn('size-3.5 shrink-0 text-muted-foreground transition', open && 'rotate-180')} />
+                <ChevronDown
+                    className={cn('size-3.5 shrink-0 text-muted-foreground transition', open && 'rotate-180')}
+                />
             </button>
             {open && (
                 <div
@@ -245,9 +238,12 @@ export default function Switcher({ area }: { area: AppArea }) {
                             <ul role='listbox' aria-label='Servers'>
                                 {grouped.map((server, i) => (
                                     <li key={server.attributes.uuid} role='option' aria-selected={server === selected}>
-                                        {groupOf(server) && groupOf(server) !== (i > 0 ? groupOf(grouped[i - 1]) : '') && (
-                                            <p className='obs-eyebrow px-2 pt-3 pb-1 text-[0.6rem]'>{groupOf(server)}</p>
-                                        )}
+                                        {groupOf(server) &&
+                                            groupOf(server) !== (i > 0 ? groupOf(grouped[i - 1]) : '') && (
+                                                <p className='obs-eyebrow px-2 pt-3 pb-1 text-[0.6rem]'>
+                                                    {groupOf(server)}
+                                                </p>
+                                            )}
                                         <div
                                             className={cn(
                                                 'group flex items-center gap-2.5 rounded-lg p-2 text-left',
@@ -271,7 +267,8 @@ export default function Switcher({ area }: { area: AppArea }) {
                                                         className='absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 border-popover'
                                                         style={{
                                                             background:
-                                                                meta[server.attributes.identifier]?.color ?? defaultTint(server.attributes.uuid),
+                                                                meta[server.attributes.identifier]?.color ??
+                                                                defaultTint(server.attributes.uuid),
                                                         }}
                                                     />
                                                 </span>
@@ -297,7 +294,10 @@ export default function Switcher({ area }: { area: AppArea }) {
                                                 )}
                                             >
                                                 <Pin
-                                                    className={cn('size-3.5', isPinned(server.attributes.uuid) && 'fill-current')}
+                                                    className={cn(
+                                                        'size-3.5',
+                                                        isPinned(server.attributes.uuid) && 'fill-current'
+                                                    )}
                                                     aria-hidden
                                                 />
                                             </button>
@@ -310,7 +310,9 @@ export default function Switcher({ area }: { area: AppArea }) {
                             {selected ? (
                                 <Preview server={selected} onOpen={(to) => go(selected, to)} />
                             ) : (
-                                <p className='p-8 text-center text-sm text-muted-foreground'>Pick a server to preview it.</p>
+                                <p className='p-8 text-center text-sm text-muted-foreground'>
+                                    Pick a server to preview it.
+                                </p>
                             )}
                         </div>
                     </div>

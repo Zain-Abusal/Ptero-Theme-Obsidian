@@ -15,10 +15,6 @@ const CustomizeServer = lazy(() => import('./CustomizeServer'));
 const iconButton =
     'relative z-10 grid size-9 place-items-center rounded-full border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-40';
 
-/**
- * One server as a row: identity, address, ring gauges, then pin, power and open. The whole row links
- * to the server; the buttons sit above that link.
- */
 export default function ServerCard({ model, server, className }: ViewProps<'dashboard.serverCard'>) {
     const { isPinned, toggle } = usePins();
     const { state, permissions, actions } = model;
@@ -54,7 +50,11 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                     </div>
                     <div className='mt-1 flex min-w-0 items-center gap-2'>
                         {ready && (
-                            <Badge size='sm' tone={stateTone(ready.power)} variant={ready.power === 'running' ? 'solid' : 'soft'}>
+                            <Badge
+                                size='sm'
+                                tone={stateTone(ready.power)}
+                                variant={ready.power === 'running' ? 'solid' : 'soft'}
+                            >
                                 {stateLabel[ready.power]}
                             </Badge>
                         )}
@@ -65,13 +65,17 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                         )}
                         {state.kind === 'loading' && <Spinner size='small' />}
                         {(meta.note || model.description) && (
-                            <span className='truncate text-xs text-muted-foreground'>{meta.note || model.description}</span>
+                            <span className='truncate text-xs text-muted-foreground'>
+                                {meta.note || model.description}
+                            </span>
                         )}
                     </div>
                 </div>
             </div>
             {model.address && (
-                <span className='hidden w-40 truncate text-right font-mono text-xs text-muted-foreground xl:block'>{model.address}</span>
+                <span className='hidden w-40 truncate text-right font-mono text-xs text-muted-foreground xl:block'>
+                    {model.address}
+                </span>
             )}
             {ready && (
                 <div className='flex items-center gap-5'>
@@ -81,7 +85,12 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                         text={`${ready.cpu.value.toFixed(0)}%`}
                         tone={ready.cpu.alarm}
                     />
-                    <Gauge label='Memory' value={fraction(ready.memory)} text={bytes(ready.memory.value)} tone={ready.memory.alarm} />
+                    <Gauge
+                        label='Memory'
+                        value={fraction(ready.memory)}
+                        text={bytes(ready.memory.value)}
+                        tone={ready.memory.alarm}
+                    />
                     {players && (
                         <Gauge
                             label='Players'
@@ -99,7 +108,7 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                     <Slot name='dashboard.serverRow.metrics.after' data={server} />
                 </div>
             )}
-            <div className='flex items-center gap-1.5'>
+            <div className='ml-auto flex items-center gap-1.5'>
                 <CustomizeButton server={server} name={model.name} onClick={() => setCustomizing(true)} />
                 <Tooltip content={pinned ? 'Unpin' : 'Pin to the top'}>
                     <button
@@ -157,13 +166,17 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
     );
 }
 
-/** Only for users who can write files, since the customization is saved in the server's files. */
 function CustomizeButton({ server, name, onClick }: { server: SdkServer; name: string; onClick: () => void }) {
     if (!can(server, 'file.update')) return null;
 
     return (
         <Tooltip content='Customize'>
-            <button type='button' aria-label={`Customize ${name}`} onClick={onClick} className={cn(iconButton, 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')}>
+            <button
+                type='button'
+                aria-label={`Customize ${name}`}
+                onClick={onClick}
+                className={cn(iconButton, 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')}
+            >
                 <Paintbrush className='size-3.5' aria-hidden />
             </button>
         </Tooltip>

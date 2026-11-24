@@ -1,10 +1,36 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
-import { ChevronDown, LayoutGrid, LogOut, Menu, Moon, Paintbrush, Palette, Play, RotateCw, Shield, Square, Sun, Users, X } from 'lucide-react';
-import { Avatar, DropdownMenu, NamedIcon, PanelLink, SpinnerOverlay, Tooltip, cn, toast, usePanelLocation } from '@pterodactyl/sdk';
+import {
+    ChevronDown,
+    LayoutGrid,
+    LogOut,
+    Menu,
+    Moon,
+    Paintbrush,
+    Palette,
+    Play,
+    RotateCw,
+    Shield,
+    Square,
+    Sun,
+    Users,
+    X,
+} from 'lucide-react';
+import {
+    Avatar,
+    DropdownMenu,
+    NamedIcon,
+    PanelLink,
+    SpinnerOverlay,
+    Tooltip,
+    cn,
+    toast,
+    usePanelLocation,
+} from '@pterodactyl/sdk';
 import {
     Main,
     Navigation,
     NavigationLink,
+    useActiveNavItem,
     Slot,
     View,
     useNavigation,
@@ -25,6 +51,7 @@ import Decor from '../ui/Decor';
 import StatusDot from '../ui/StatusDot';
 import ServerIcon from '../lib/serverIcon';
 import Switcher from './Switcher';
+import Collapse from '../ui/Collapse';
 import { useActiveIndicator } from '../lib/indicator';
 import { SURFACES, useSurface, withTransition } from '../lib/surface';
 import { defaultTint, useServerMeta } from '../lib/serverMeta';
@@ -51,26 +78,30 @@ function Brand({ model }: { model: AppLayoutModel }) {
     );
 }
 
-/** A titled, collapsible run of links; the collapsed state is remembered per browser. */
-function Group({ name, children }: { name: string; children: ReactNode }) {
-    const [collapsed, setCollapsed] = useStored<string[]>('collapsed', []);
-    const closed = collapsed.includes(name);
+const QUIET_GROUPS = ['Tools', 'Configuration'];
+
+function Group({ name, items, children }: { name: string; items?: readonly NavItem[]; children: ReactNode }) {
+    const [state, setState] = useStored<Record<string, boolean>>('groups', {});
+    const holdsActive = useActiveNavItem(items ?? []) !== undefined;
+    const open = holdsActive || (state[name] ?? !QUIET_GROUPS.includes(name));
 
     return (
-        <div className='flex flex-col gap-0.5'>
+        <div className='flex flex-col'>
             <button
                 type='button'
-                aria-expanded={!closed}
-                onClick={() => setCollapsed(closed ? collapsed.filter((g) => g !== name) : [...collapsed, name])}
-                className='obs-eyebrow group mt-3 flex items-center justify-between rounded-md px-3 py-1.5 text-left text-[0.65rem] hover:text-foreground'
+                aria-expanded={open}
+                onClick={() => setState({ ...state, [name]: !open })}
+                className='obs-eyebrow group mt-3 flex items-center justify-between rounded-md px-3 py-1.5 text-left text-[0.65rem] transition-colors hover:text-foreground'
             >
                 {name}
                 <ChevronDown
-                    className={cn('size-3 opacity-0 transition group-hover:opacity-100', closed && '-rotate-90 opacity-100')}
+                    className={cn('size-3 transition-transform duration-200', !open && '-rotate-90')}
                     aria-hidden
                 />
             </button>
-            {!closed && children}
+            <Collapse open={open}>
+                <div className='flex flex-col gap-0.5 pt-0.5'>{children}</div>
+            </Collapse>
         </div>
     );
 }
@@ -89,7 +120,6 @@ function NavList({ items }: { items: readonly NavItem[] }) {
     );
 }
 
-/** The slots an area layout renders around its navigation; Obsidian draws that navigation, so it renders them. */
 function AreaSlot({ area, at }: { area: Exclude<AppArea, { kind: 'dashboard' }>; at: 'before' | 'after' }) {
     if (area.kind === 'server') return <Slot name={`server.navigation.${at}`} data={area.server} compact />;
     if (area.kind === 'account') return <Slot name={`account.navigation.${at}`} compact />;
@@ -127,7 +157,6 @@ function PowerButton({
     );
 }
 
-/** The server above its navigation: icon, name, address, live state and the power controls. */
 function SidebarServer({ area }: { area: ServerArea }) {
     const [sending, setSending] = useState(false);
     const { server, state } = area;
@@ -148,10 +177,8 @@ function SidebarServer({ area }: { area: ServerArea }) {
 
     return (
         <div
-            className='obs-surface relative mt-1 flex flex-col gap-3 overflow-hidden p-3'
-            style={{
-                backgroundImage: `radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, ${tint} 14%, transparent), transparent 60%)`,
-            }}
+            className='obs-surface relative mt-1 flex flex-col gap-3 overflow-hidden p-3 before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-r-full before:bg-(--obs-tint)'
+            style={{ '--obs-tint': tint } as React.CSSProperties}
         >
             <div className='flex items-center gap-3'>
                 <ServerIcon identifier={area.identifier} uuid={area.uuid} size={40} />
@@ -219,7 +246,6 @@ function SidebarServer({ area }: { area: ServerArea }) {
     );
 }
 
-/** Account links outside the server and admin areas, so they are always one click away. */
 function AccountLinks() {
     const { items } = useNavigation('account');
 
@@ -243,56 +269,59 @@ function Sidebar({ model }: { model: AppLayoutModel }) {
                 ref={navs}
                 data-obs-indicated
                 className='relative'
-                style={area.kind === 'server' ? ({ '--obs-server-tint': tint ?? defaultTint(area.uuid) } as React.CSSProperties) : undefined}
+                style={
+                    area.kind === 'server'
+                        ? ({ '--obs-server-tint': tint ?? defaultTint(area.uuid) } as React.CSSProperties)
+                        : undefined
+                }
             >
-            <span className='obs-indicator' aria-hidden />
-            <nav aria-label='Main' className='mt-3 flex flex-col gap-0.5'>
-                <Slot name='nav.items.before' compact />
-                <PanelLink destination={{ to: '/' }} exact className='obs-nav-link'>
-                    <LayoutGrid aria-hidden />
-                    All servers
-                </PanelLink>
-                {admin && (
-                    <PanelLink destination={admin.destination} exact={admin.exact} className='obs-nav-link'>
-                        <Shield aria-hidden />
-                        {admin.label}
+                <span className='obs-indicator' aria-hidden />
+                <nav aria-label='Main' className='mt-3 flex flex-col gap-0.5'>
+                    <Slot name='nav.items.before' compact />
+                    <PanelLink destination={{ to: '/' }} exact className='obs-nav-link'>
+                        <LayoutGrid aria-hidden />
+                        All servers
                     </PanelLink>
-                )}
-                <Slot name='nav.items.after' compact />
-            </nav>
-            {area.kind === 'server' ? (
-                <nav aria-label='Server' className='flex flex-col'>
-                    {!settings.sidebarServer && <AreaSlot area={area} at='before' />}
-                    <AreaSlot area={area} at='after' />
-                    {groupServerNav(serverItems ?? area.nav.items).map((group) => (
-                        <Group key={group.name} name={group.name}>
-                            <NavList items={group.items} />
+                    {admin && (
+                        <PanelLink destination={admin.destination} exact={admin.exact} className='obs-nav-link'>
+                            <Shield aria-hidden />
+                            {admin.label}
+                        </PanelLink>
+                    )}
+                    <Slot name='nav.items.after' compact />
+                </nav>
+                {area.kind === 'server' ? (
+                    <nav aria-label='Server' className='flex flex-col'>
+                        {!settings.sidebarServer && <AreaSlot area={area} at='before' />}
+                        <AreaSlot area={area} at='after' />
+                        {groupServerNav(serverItems ?? area.nav.items).map((group) => (
+                            <Group key={group.name} name={group.name} items={group.items}>
+                                <NavList items={group.items} />
+                            </Group>
+                        ))}
+                    </nav>
+                ) : area.kind === 'admin' ? (
+                    <nav aria-label='Administration' className='flex flex-col'>
+                        <AreaSlot area={area} at='before' />
+                        <Group name='Administration' items={area.nav.items}>
+                            <NavList items={area.nav.items} />
                         </Group>
-                    ))}
-                </nav>
-            ) : area.kind === 'admin' ? (
-                <nav aria-label='Administration' className='flex flex-col'>
-                    <AreaSlot area={area} at='before' />
-                    <Group name='Administration'>
-                        <NavList items={area.nav.items} />
-                    </Group>
-                    <AreaSlot area={area} at='after' />
-                </nav>
-            ) : (
-                <nav aria-label='Account' className='flex flex-col'>
-                    {area.kind === 'account' && <AreaSlot area={area} at='before' />}
-                    <Group name='Account'>
-                        <AccountLinks />
-                    </Group>
-                    {area.kind === 'account' && <AreaSlot area={area} at='after' />}
-                </nav>
-            )}
+                        <AreaSlot area={area} at='after' />
+                    </nav>
+                ) : (
+                    <nav aria-label='Account' className='flex flex-col'>
+                        {area.kind === 'account' && <AreaSlot area={area} at='before' />}
+                        <Group name='Account'>
+                            <AccountLinks />
+                        </Group>
+                        {area.kind === 'account' && <AreaSlot area={area} at='after' />}
+                    </nav>
+                )}
             </div>
         </>
     );
 }
 
-/** The surface library: each surface is a whole look in both schemes; the choice is kept per browser. */
 function SurfaceMenu() {
     const [surface, setSurface] = useSurface();
 
@@ -369,10 +398,12 @@ function UserCard({ model }: { model: AppLayoutModel }) {
     );
 }
 
-/** The current page's name from the document title, e.g. "Survival | Console" gives "Console". */
 function Crumb({ area }: { area: AppArea }) {
     const title = usePageTitle() ?? '';
-    const parts = title.split('|').map((part) => part.trim()).filter(Boolean);
+    const parts = title
+        .split('|')
+        .map((part) => part.trim())
+        .filter(Boolean);
     const page = parts.length > 1 ? parts[parts.length - 1] : area.kind === 'dashboard' ? null : parts[0];
 
     if (!page || (area.kind === 'server' && page === area.name)) return null;
@@ -387,7 +418,6 @@ function Crumb({ area }: { area: AppArea }) {
     );
 }
 
-/** A sidebar beside the page on large screens, a drawer behind the menu button below them. */
 export default function Shell({ model, children }: ViewProps<'layout.app'>) {
     const [open, setOpen] = useState(false);
     const { pathname } = usePanelLocation();
@@ -397,8 +427,6 @@ export default function Shell({ model, children }: ViewProps<'layout.app'>) {
     useEffect(() => setOpen(false), [pathname]);
     useEffect(() => {
         if (area.kind === 'server') touch(area.identifier);
-        // Only when the server changes.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [area.kind === 'server' ? area.identifier : null]);
 
     return (
@@ -435,7 +463,7 @@ export default function Shell({ model, children }: ViewProps<'layout.app'>) {
                     <UserCard model={model} />
                 </div>
             </aside>
-            <div className='flex min-w-0 flex-1 flex-col'>
+            <div className='relative z-1 flex min-w-0 flex-1 flex-col'>
                 <header className='obs-topbar sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-transparent bg-background/92 px-4 sm:px-6 lg:px-8'>
                     <button
                         type='button'

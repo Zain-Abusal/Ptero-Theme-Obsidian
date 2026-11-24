@@ -1,10 +1,9 @@
 import { http } from '@pterodactyl/sdk';
 
-/** Tasks wait at most this long after the one before them (CreateScheduleTask: time_offset max:900). */
 export const MAX_OFFSET = 900;
-/** The panel's default per-schedule task limit (PTERODACTYL_PER_SCHEDULE_TASK_LIMIT). */
+
 export const TASK_LIMIT = 10;
-/** Schedules Obsidian creates are named with this prefix, so the page lists only its own. */
+
 export const PREFIX = '[Obsidian] ';
 
 export interface PlannedTask {
@@ -14,12 +13,10 @@ export interface PlannedTask {
 }
 
 export interface RestartPlan {
-    /** Seconds between the schedule firing and the restart. */
     readonly lead: number;
     readonly tasks: PlannedTask[];
 }
 
-/** "10 minutes", "1 minute", "30 seconds", "1 minute 30 seconds". */
 export function spell(seconds: number): string {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -28,17 +25,11 @@ export function spell(seconds: number): string {
     return m ? part(m, 'minute') : part(s, 'second');
 }
 
-/**
- * The tasks for a restart with in-game warnings. `warnings` are seconds before the restart. The
- * schedule fires on a whole minute, so the first task waits the leftover seconds; any gap longer than
- * the panel's 900-second limit gets an extra warning in between, so no offset ever exceeds it.
- */
 export function planRestart(warnings: readonly number[], template: string): RestartPlan {
     const marks = [...new Set(warnings.filter((w) => Number.isFinite(w) && w > 0).map((w) => Math.round(w)))].sort(
         (a, b) => b - a
     );
 
-    // Fill gaps the panel cannot wait through with extra warnings.
     const filled: number[] = [];
     for (const mark of marks) {
         const previous = filled[filled.length - 1];
@@ -51,7 +42,7 @@ export function planRestart(warnings: readonly number[], template: string): Rest
         }
         filled.push(mark);
     }
-    // The last warning to the restart itself.
+
     if (filled.length) {
         let at = filled[filled.length - 1];
         while (at > MAX_OFFSET) {
@@ -81,10 +72,6 @@ export interface Cron {
     readonly day_of_week: string;
 }
 
-/**
- * The cron fields for a schedule that fires `lead` seconds before `time` ("HH:MM") on `days`
- * (0 = Sunday). Firing before midnight moves each day back by one.
- */
 export function cronFor(time: string, days: readonly number[], lead: number): Cron {
     const [h, m] = time.split(':').map(Number);
     let start = h * 60 + m - lead / 60;
@@ -103,10 +90,8 @@ export function cronFor(time: string, days: readonly number[], lead: number): Cr
     };
 }
 
-/** "Mon, Wed" style list for cron days, or "Every day". */
 export const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// #region API
 export interface Schedule {
     readonly id: number;
     readonly name: string;
@@ -164,13 +149,11 @@ export async function createRestart(
             await http.post(`${base(id)}/${scheduleId}/tasks`, { ...task, continue_on_failure: true });
         }
     } catch (error) {
-        // Leave no half-built schedule behind.
         await http.delete(`${base(id)}/${scheduleId}`).catch(() => undefined);
         throw error;
     }
 }
 
-/** The update route validates every cron field, so it sends the schedule back whole. */
 export async function setActive(id: string, schedule: Schedule, active: boolean): Promise<void> {
     await http.post(`${base(id)}/${schedule.id}`, {
         name: schedule.name,
@@ -185,4 +168,3 @@ export async function setActive(id: string, schedule: Schedule, active: boolean)
 }
 
 export const deleteSchedule = (id: string, schedule: Schedule) => http.delete(`${base(id)}/${schedule.id}`);
-// #endregion

@@ -1,7 +1,6 @@
 import { useThemeSettings } from '@pterodactyl/sdk/theme';
 import type { ThemeSettings } from '../theme-types';
 
-/** Obsidian's settings with every value defaulted, so a panel that never saved them still renders. */
 export function useObsidian(): ThemeSettings {
     const s = useThemeSettings<Partial<ThemeSettings>>();
 
@@ -27,5 +26,4 @@ export function useObsidian(): ThemeSettings {
     };
 }
 
-/** The brand name: the theme's own when an administrator set one, else the panel's. */
 export const brandName = (panelName: string, settings: ThemeSettings) => settings.brandName.trim() || panelName;

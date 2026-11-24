@@ -5,6 +5,7 @@ import { Alert, Button, PanelLink, Spinner, Switch, cn, toast } from '@pterodact
 import { attempt } from '../ui/Page';
 import { useToolkit } from './useToolkit';
 import { applyChanges, coerce, leaves, parseYaml, pathKey, type Leaf, type Value } from './yaml-config';
+import Collapse from '../../ui/Collapse';
 
 function Control({ leaf, value, onChange }: { leaf: Leaf; value: Value; onChange: (value: Value) => void }) {
     const input =
@@ -33,7 +34,6 @@ function Control({ leaf, value, onChange }: { leaf: Leaf; value: Value; onChange
     );
 }
 
-/** A YAML config (bukkit.yml, spigot.yml, Paper's) as a form. Saving changes only the edited values; comments stay. */
 export default function YamlEditor({ file, term, changesOnly }: { file: string; term: string; changesOnly: boolean }) {
     const { id, api } = useToolkit();
     const client = useQueryClient();
@@ -146,7 +146,7 @@ export default function YamlEditor({ file, term, changesOnly }: { file: string; 
                                     aria-hidden
                                 />
                             </button>
-                            {expanded && (
+                            <Collapse open={expanded}>
                                 <ul className='divide-y divide-border border-t border-border'>
                                     {list.map((leaf) => {
                                         const k = pathKey(leaf.path);
@@ -182,7 +182,7 @@ export default function YamlEditor({ file, term, changesOnly }: { file: string; 
                                         );
                                     })}
                                 </ul>
-                            )}
+                            </Collapse>
                         </section>
                     );
                 })}

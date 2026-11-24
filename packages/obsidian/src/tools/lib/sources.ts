@@ -16,7 +16,7 @@ export interface Project {
     readonly updated: string | null;
     readonly tags: string[];
     readonly page: string;
-    /** Spigot resources hosted elsewhere, or premium, cannot be downloaded by the server. */
+
     readonly external?: boolean;
 }
 
@@ -27,7 +27,7 @@ export interface SearchOptions {
     readonly gameVersion: string | null;
     readonly category: string | null;
     readonly offset: number;
-    /** The CurseForge API key; CurseForge is skipped without one. */
+
     readonly cfKey?: string;
 }
 
@@ -38,7 +38,6 @@ export interface Category {
     readonly hangar: string | null;
 }
 
-/** One set of categories across the three sources; a source without the category ignores it. */
 export const categories: Category[] = [
     { id: 'all', label: 'Everything', modrinth: null, hangar: null },
     { id: 'admin', label: 'Admin', modrinth: 'management', hangar: 'admin_tools' },
@@ -57,7 +56,6 @@ const PAGE = 18;
 
 export const pageSize = PAGE;
 
-// #region Modrinth
 interface ModrinthHit {
     project_id: string;
     slug: string;
@@ -78,7 +76,6 @@ const MODRINTH_TYPES: Record<Kind, string[]> = {
     resourcepack: ['project_type:resourcepack'],
 };
 
-/** The Modrinth "loaders" a kind's files are published under. */
 export function modrinthLoaders(kind: Kind, loaders: string[]): string[] {
     if (kind === 'datapack') return ['datapack'];
     if (kind === 'resourcepack') return ['minecraft'];
@@ -89,7 +86,7 @@ export function modrinthLoaders(kind: Kind, loaders: string[]): string[] {
 async function searchModrinth(o: SearchOptions): Promise<{ hits: Project[]; total: number }> {
     const category = categories.find((c) => c.id === o.category)?.modrinth;
     const facets: string[][] = [MODRINTH_TYPES[o.kind]];
-    // Plugins and mods follow the server's loader; packs are chosen for what they are.
+
     if (o.kind === 'plugin' || o.kind === 'mod') facets.push(o.loaders.map((l) => `categories:${l}`));
     if (o.gameVersion) facets.push([`versions:${o.gameVersion}`]);
     if (category) facets.push([`categories:${category}`]);
@@ -101,7 +98,9 @@ async function searchModrinth(o: SearchOptions): Promise<{ hits: Project[]; tota
         index: o.query ? 'relevance' : 'downloads',
         facets: JSON.stringify(facets),
     });
-    const data = await getJson<{ hits: ModrinthHit[]; total_hits: number }>(`https://api.modrinth.com/v2/search?${params}`);
+    const data = await getJson<{ hits: ModrinthHit[]; total_hits: number }>(
+        `https://api.modrinth.com/v2/search?${params}`
+    );
 
     return {
         total: data.total_hits,
@@ -131,13 +130,12 @@ interface ModrinthVersion {
 export interface Resolved {
     readonly url: string;
     readonly filename: string;
-    /** False when no build matched the Minecraft version and the newest was taken instead. */
+
     readonly exact: boolean;
     readonly sha1?: string;
     readonly loaders?: string[];
 }
 
-/** The newest file of a Modrinth project for these loaders, on this Minecraft version when there is one. */
 export async function modrinthDownload(
     idOrSlug: string,
     loaders: string[],
@@ -148,7 +146,8 @@ export async function modrinthDownload(
             ...(loaders.length ? { loaders: JSON.stringify(loaders) } : {}),
             ...(withVersion && gameVersion ? { game_versions: JSON.stringify([gameVersion]) } : {}),
         });
-    const url = (withVersion: boolean) => `https://api.modrinth.com/v2/project/${idOrSlug}/version?${query(withVersion)}`;
+    const url = (withVersion: boolean) =>
+        `https://api.modrinth.com/v2/project/${idOrSlug}/version?${query(withVersion)}`;
 
     let versions = await getJson<ModrinthVersion[]>(url(true));
     const exact = versions.length > 0;
@@ -156,11 +155,15 @@ export async function modrinthDownload(
     const file = versions[0]?.files.find((f) => f.primary) ?? versions[0]?.files[0];
     if (!file) throw new Error(`No ${loaders[0] ?? ''} build of ${idOrSlug} was found.`.replace('  ', ' '));
 
-    return { url: file.url, filename: safeName(file.filename), exact, sha1: file.hashes.sha1, loaders: versions[0].loaders };
+    return {
+        url: file.url,
+        filename: safeName(file.filename),
+        exact,
+        sha1: file.hashes.sha1,
+        loaders: versions[0].loaders,
+    };
 }
-// #endregion
 
-// #region Hangar
 interface HangarProject {
     name: string;
     namespace: { owner: string; slug: string };
@@ -208,14 +211,12 @@ async function searchHangar(o: SearchOptions): Promise<{ hits: Project[]; total:
 
 interface HangarVersion {
     name: string;
-    downloads: Record<string, { downloadUrl: string | null; externalUrl: string | null; fileInfo: { name: string } | null }>;
+    downloads: Record<
+        string,
+        { downloadUrl: string | null; externalUrl: string | null; fileInfo: { name: string } | null }
+    >;
 }
 
-/**
- * The newest release of a Hangar project for the platform. Some projects host their file elsewhere
- * (Floodgate does), so the version's direct `downloadUrl` or `externalUrl` is used rather than
- * Hangar's redirecting download route.
- */
 export async function hangarDownload(slug: string, loaders: string[]): Promise<{ url: string; filename: string }> {
     const platform = hangarPlatform(loaders);
     const data = await getJson<{ result: HangarVersion[] }>(
@@ -229,9 +230,7 @@ export async function hangarDownload(slug: string, loaders: string[]): Promise<{
     const name = file.fileInfo?.name ?? (version.name === slug ? `${slug}.jar` : `${slug}-${version.name}.jar`);
     return { url, filename: safeName(name) };
 }
-// #endregion
 
-// #region Spigot (Spiget)
 interface SpigetResource {
     id: number;
     name: string;
@@ -255,7 +254,7 @@ async function searchSpigot(o: SearchOptions): Promise<{ hits: Project[]; total:
         ? `https://api.spiget.org/v2/search/resources/${encodeURIComponent(o.query)}?field=name&${params}`
         : `https://api.spiget.org/v2/resources/free?${params}`;
     const response = await fetch(url);
-    // Spiget answers a search with no results as 404.
+
     if (response.status === 404) return { hits: [], total: 0 };
     if (!response.ok) throw new Error(`SpigotMC answered ${response.status}.`);
     const data = (await response.json()) as SpigetResource[];
@@ -279,12 +278,12 @@ async function searchSpigot(o: SearchOptions): Promise<{ hits: Project[]; total:
         })),
     };
 }
-// #endregion
 
 export function search(source: Source, options: SearchOptions) {
     if (source === 'curseforge') {
         if (!options.cfKey) return Promise.resolve({ hits: [], total: 0 });
-        const kind = options.kind === 'plugin' || options.kind === 'mod' || options.kind === 'modpack' ? options.kind : 'mod';
+        const kind =
+            options.kind === 'plugin' || options.kind === 'mod' || options.kind === 'modpack' ? options.kind : 'mod';
         return cfSearch(options.cfKey, { ...options, kind, pageSize: PAGE });
     }
     if (source === 'hangar') return searchHangar(options);
@@ -292,7 +291,6 @@ export function search(source: Source, options: SearchOptions) {
     return searchModrinth(options);
 }
 
-/** Where the server downloads a project from, and the file name it gets. */
 export async function downloadFor(
     project: Project,
     loaders: string[],
@@ -302,24 +300,31 @@ export async function downloadFor(
 ): Promise<Resolved> {
     if (project.source === 'modrinth') return modrinthDownload(project.id, modrinthLoaders(kind, loaders), gameVersion);
     if (project.source === 'curseforge') {
-        if (project.external) throw new Error(`The author only allows downloads from CurseForge itself: ${project.page}`);
+        if (project.external)
+            throw new Error(`The author only allows downloads from CurseForge itself: ${project.page}`);
         const { file, exact } = await cfLatestFile(cfKey, project.id, gameVersion, kind === 'mod' ? loaders : []);
         return { ...cfDownload(file, project.page), exact };
     }
     if (project.source === 'hangar') return { ...(await hangarDownload(project.slug, loaders)), exact: true };
     if (project.external) throw new Error(`${project.title} is hosted outside SpigotMC; download it from its page.`);
 
-    return { url: `https://api.spiget.org/v2/resources/${project.id}/download`, filename: safeName(`${project.title}.jar`), exact: true };
+    return {
+        url: `https://api.spiget.org/v2/resources/${project.id}/download`,
+        filename: safeName(`${project.title}.jar`),
+        exact: true,
+    };
 }
 
-/** Letters and digits only, for matching a project against the jars already installed. */
 export const normalise = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-/** Whether one of the installed jar names looks like this project. */
 export const looksInstalled = (names: readonly string[], ...keys: string[]) => {
     const wanted = keys.map(normalise).filter((k) => k.length >= 3);
     return names.some((name) => wanted.some((key) => normalise(name.replace(/\.jar$/i, '')).startsWith(key)));
 };
 
 export const compact = (n: number) =>
-    n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}k` : String(n);
+    n >= 1_000_000
+        ? `${(n / 1_000_000).toFixed(1)}M`
+        : n >= 1_000
+          ? `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}k`
+          : String(n);

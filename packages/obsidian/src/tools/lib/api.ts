@@ -1,6 +1,5 @@
 import { http, invalidateServerData } from '@pterodactyl/sdk';
 
-/** A file or folder in a listing, as the client API returns it. */
 export interface Entry {
     readonly name: string;
     readonly size: number;
@@ -14,7 +13,6 @@ interface ListResponse {
 
 const base = (id: string) => `/api/client/servers/${id}`;
 
-/** Thin wrappers over the panel's client file and console API, bound to one server. */
 export function serverApi(id: string) {
     return {
         async list(directory: string): Promise<Entry[]> {
@@ -26,7 +24,7 @@ export function serverApi(id: string) {
                 modifiedAt: a.modified_at,
             }));
         },
-        /** A directory's entries, or an empty list when it does not exist yet. */
+
         async listOrEmpty(directory: string): Promise<Entry[]> {
             try {
                 return await this.list(directory);
@@ -56,7 +54,7 @@ export function serverApi(id: string) {
             });
             await invalidateServerData(id, ['files', 'fileContent']);
         },
-        /** Wings downloads the URL itself; `foreground` waits until the file is on disk. */
+
         async pull(url: string, directory: string, filename?: string): Promise<void> {
             await http.post(`${base(id)}/files/pull`, {
                 url,
@@ -82,7 +80,7 @@ export function serverApi(id: string) {
             await http.post(`${base(id)}/files/decompress`, { root, file });
             await invalidateServerData(id, ['files']);
         },
-        /** Uploads files straight to Wings through a signed URL; not rate limited like `pull`. */
+
         async upload(directory: string, files: File[]): Promise<void> {
             if (files.length === 0) return;
             const { data } = await http.get<{ attributes: { url: string } }>(`${base(id)}/files/upload`);
@@ -94,11 +92,13 @@ export function serverApi(id: string) {
             if (!response.ok) throw new Error(`Uploading to ${directory} failed (${response.status}).`);
             await invalidateServerData(id, ['files']);
         },
-        /**
-         * Puts one remote file on the server. The browser downloads it and uploads it when the host allows
-         * it and it fits the node's upload limit; otherwise Wings pulls it (5 pulls per 10 minutes).
-         */
-        async install(url: string, directory: string, filename: string, options: InstallOptions = {}): Promise<'upload' | 'pull'> {
+
+        async install(
+            url: string,
+            directory: string,
+            filename: string,
+            options: InstallOptions = {}
+        ): Promise<'upload' | 'pull'> {
             const file = await fetchAsFile(url, filename, (options.maxMb ?? 100) * 1024 * 1024, options.fetcher);
             if (file) {
                 await this.upload(directory, [file]);
@@ -107,8 +107,11 @@ export function serverApi(id: string) {
             await this.pull(url, directory, filename);
             return 'pull';
         },
-        /** Installs many files: downloads a few at a time, uploads them in batches per folder, pulls what cannot be fetched. */
-        async installMany(items: readonly InstallItem[], options: InstallOptions & ManyOptions = {}): Promise<InstallSummary> {
+
+        async installMany(
+            items: readonly InstallItem[],
+            options: InstallOptions & ManyOptions = {}
+        ): Promise<InstallSummary> {
             return installMany(this, items, options);
         },
         async command(command: string): Promise<void> {
@@ -130,18 +133,15 @@ export function serverApi(id: string) {
 
 export type ServerApi = ReturnType<typeof serverApi>;
 
-/** A JSON GET against a public API, such as Modrinth's. */
 export async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
     const response = await fetch(url, { ...init, headers: { Accept: 'application/json', ...init?.headers } });
     if (!response.ok) throw new Error(`${new URL(url).host} answered ${response.status}.`);
     return (await response.json()) as T;
 }
 
-/** A safe file name for a download: letters, digits, dots, dashes and underscores. */
 export const safeName = (name: string) => name.replace(/[^\w.+-]+/g, '-').replace(/^-+|-+$/g, '') || 'download.jar';
 
 export interface InstallOptions {
-    /** The node's upload limit in MiB (`server.attributes.upload_size`). */
     readonly maxMb?: number;
     readonly fetcher?: typeof fetch;
 }
@@ -154,7 +154,7 @@ export interface InstallItem {
 
 export interface ManyOptions {
     readonly concurrency?: number;
-    /** Called as each file lands (or fails), for progress UI. */
+
     readonly onFile?: (item: InstallItem, result: 'upload' | 'pull' | 'failed', error?: string) => void;
 }
 
@@ -164,14 +164,14 @@ export interface InstallSummary {
     readonly failed: { item: InstallItem; error: string }[];
 }
 
-/** Archives and jars start with "PK"; a page of HTML in their place means the host refused the download. */
 const ARCHIVE = /\.(jar|zip|mrpack)$/i;
 
-/**
- * Downloads a URL in the browser as a File, or returns null when it cannot (CORS, network, an HTTP
- * error, larger than `maxBytes`, or not the archive its name promises).
- */
-export async function fetchAsFile(url: string, filename: string, maxBytes: number, fetcher: typeof fetch = fetch): Promise<File | null> {
+export async function fetchAsFile(
+    url: string,
+    filename: string,
+    maxBytes: number,
+    fetcher: typeof fetch = fetch
+): Promise<File | null> {
     const controller = new AbortController();
     try {
         const response = await fetcher(url, { signal: controller.signal, redirect: 'follow' });
@@ -190,7 +190,6 @@ export async function fetchAsFile(url: string, filename: string, maxBytes: numbe
     }
 }
 
-/** Upload batches stay small, so one failure does not lose much and progress keeps moving. */
 const BATCH_FILES = 12;
 const BATCH_BYTES = 48 * 1024 * 1024;
 
@@ -212,11 +211,13 @@ export async function installMany(
         pending.delete(directory);
         if (batch.length === 0) return;
         try {
-            await api.upload(directory, batch.map((b) => b.file));
+            await api.upload(
+                directory,
+                batch.map((b) => b.file)
+            );
             uploaded += batch.length;
             batch.forEach((b) => options.onFile?.(b.item, 'upload'));
         } catch {
-            // An upload that fails falls back to pulling each file.
             toPull.push(...batch.map((b) => b.item));
         }
     };
@@ -258,4 +259,6 @@ export async function installMany(
 }
 
 const isRateLimited = (error: unknown) =>
-    typeof error === 'object' && error !== null && (error as { response?: { status?: number } }).response?.status === 429;
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { response?: { status?: number } }).response?.status === 429;

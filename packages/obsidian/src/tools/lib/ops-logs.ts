@@ -1,20 +1,17 @@
 export type Level = 'error' | 'warn' | 'info';
 
-/** Strips ANSI colours and Minecraft § codes from a console line. */
 export const plainLine = (line: string) =>
     line
         .replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')
         .replace(/§./g, '')
         .replace(/\r/g, '');
 
-/** The level of a console line, from its "[12:00:00 WARN]" style prefix or an exception. */
 export function levelOf(line: string): Level {
     if (/\b(ERROR|SEVERE|FATAL)\b|Exception|^\s+at [\w.$]+\(/.test(line)) return 'error';
     if (/\bWARN(ING)?\b/.test(line)) return 'warn';
     return 'info';
 }
 
-/** Splits a line around every match of `term`, for highlighting. */
 export function highlight(line: string, term: string): { text: string; match: boolean }[] {
     if (!term) return [{ text: line, match: false }];
     const parts: { text: string; match: boolean }[] = [];
@@ -30,6 +27,5 @@ export function highlight(line: string, term: string): { text: string; match: bo
     return parts;
 }
 
-/** Keeps the newest `cap` lines. */
 export const capLines = (lines: readonly string[], cap: number) =>
     lines.length > cap ? lines.slice(-cap) : [...lines];

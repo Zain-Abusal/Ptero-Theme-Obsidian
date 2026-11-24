@@ -7,7 +7,6 @@ export type LevelFilter = 'all' | 'warn' | 'error';
 const passes = (level: Level, filter: LevelFilter) =>
     filter === 'all' || (filter === 'error' ? level === 'error' : level !== 'info');
 
-/** The buffered console as text, filtered by level and search, newest at the bottom. */
 export default function LogPanel({
     lines,
     term,
@@ -25,7 +24,6 @@ export default function LogPanel({
             .filter((l) => passes(l.level, filter) && (!needle || l.text.toLowerCase().includes(needle)));
     }, [lines, term, filter]);
 
-    // Follow the newest line.
     useEffect(() => {
         if (box.current) box.current.scrollTop = box.current.scrollHeight;
     }, [shown.length]);

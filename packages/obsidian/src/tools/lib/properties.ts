@@ -1,10 +1,8 @@
-/** A parsed server.properties: its lines as written, so saving keeps comments and order. */
 export interface PropertiesFile {
     readonly lines: readonly string[];
     readonly values: Readonly<Record<string, string>>;
 }
 
-/** Java properties escape `:`, `=`, `#`, `!` and backslashes; Minecraft also writes `\uXXXX`. */
 const unescape = (value: string) =>
     value.replace(/\\u([0-9a-fA-F]{4})|\\(.)/g, (_, hex: string | undefined, ch: string | undefined) =>
         hex ? String.fromCharCode(parseInt(hex, 16)) : ch === 'n' ? '\n' : ch === 't' ? '\t' : (ch ?? '')
@@ -34,7 +32,6 @@ export function parseProperties(text: string): PropertiesFile {
     return { lines, values };
 }
 
-/** Writes changed values in place, appends new keys at the end, and leaves every other line as it was. */
 export function serializeProperties(file: PropertiesFile, values: Readonly<Record<string, string>>): string {
     const seen = new Set<string>();
     const lines = file.lines.map((line) => {
@@ -75,7 +72,6 @@ const text = { type: 'text' } as const;
 const num = (min?: number, max?: number, unit?: string) => ({ type: 'number', min, max, unit }) as const;
 const select = (options: Record<string, string>) => ({ type: 'select', options }) as const;
 
-/** Every setting a vanilla or Paper server.properties has, in plain words. Unknown keys still show under Advanced. */
 export const FIELDS: readonly Field[] = [
     {
         key: 'motd',
@@ -288,7 +284,6 @@ export const FIELDS: readonly Field[] = [
 
 export const fieldByKey = new Map(FIELDS.map((f) => [f.key, f]));
 
-/** The tiles at the top of the page, in order. */
 export const QUICK = [
     'max-players',
     'difficulty',
@@ -301,7 +296,6 @@ export const QUICK = [
     'spawn-protection',
 ] as const;
 
-// #region MOTD
 export interface MotdSpan {
     readonly text: string;
     readonly color: string | null;
@@ -311,7 +305,6 @@ export interface MotdSpan {
     readonly strike: boolean;
 }
 
-/** Minecraft's sixteen chat colours. */
 export const COLORS: Readonly<Record<string, string>> = {
     '0': '#000000',
     '1': '#0000aa',
@@ -331,7 +324,6 @@ export const COLORS: Readonly<Record<string, string>> = {
     f: '#ffffff',
 };
 
-/** Splits a MOTD with § or & codes (and §x hex colours) into styled spans. */
 export function parseMotd(motd: string): MotdSpan[] {
     const spans: MotdSpan[] = [];
     let style = { color: null as string | null, bold: false, italic: false, underline: false, strike: false };
@@ -383,4 +375,3 @@ export function parseMotd(motd: string): MotdSpan[] {
 
     return spans;
 }
-// #endregion

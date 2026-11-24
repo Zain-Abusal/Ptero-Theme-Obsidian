@@ -10,7 +10,9 @@
         "test": "npm run test --workspaces --if-present",
         "typecheck": "npm run typecheck --workspaces --if-present",
         "pack": "node scripts/pack.mjs",
-        "release": "npm run typecheck && npm run test && npm run build && npm run pack"
+        "release": "npm run style && npm run typecheck && npm run test && npm run build && npm run pack",
+        "style": "node scripts/style.mjs && panel/node_modules/.bin/oxfmt --check packages/obsidian/src scripts",
+        "style:fix": "node scripts/style.mjs --fix && panel/node_modules/.bin/oxfmt packages/obsidian/src scripts"
     },
     "devDependencies": {
         "@base-ui/react": "^1.6.0",

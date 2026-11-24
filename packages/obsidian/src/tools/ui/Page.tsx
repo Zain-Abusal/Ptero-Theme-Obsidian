@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { ServerContentBlock, cn, httpErrorToHuman } from '@pterodactyl/sdk';
 
-/** A toolkit page: a title block, optional actions, then the content. */
 export default function Page({
     title,
     description,
@@ -31,7 +30,6 @@ export default function Page({
     );
 }
 
-/** A bordered panel; `title` adds a quiet header. */
 export function Panel({
     title,
     aside,
@@ -56,57 +54,21 @@ export function Panel({
     );
 }
 
-/** Small caps label. */
 export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <p className={cn('text-[0.6875rem] font-semibold tracking-[0.08em] text-muted-foreground uppercase', className)}>
+        <p
+            className={cn(
+                'text-[0.6875rem] font-semibold tracking-[0.08em] text-muted-foreground uppercase',
+                className
+            )}
+        >
             {children}
         </p>
     );
 }
 
-/** A pill switch between a few choices. */
-export function Segmented<T extends string>({
-    value,
-    options,
-    onChange,
-    label,
-    className,
-}: {
-    value: T;
-    options: readonly { value: T; label: ReactNode }[];
-    onChange: (value: T) => void;
-    label: string;
-    className?: string;
-}) {
-    return (
-        <div
-            role='tablist'
-            aria-label={label}
-            className={cn('inline-flex flex-wrap rounded-full border border-border bg-card p-1', className)}
-        >
-            {options.map((option) => (
-                <button
-                    key={option.value}
-                    type='button'
-                    role='tab'
-                    aria-selected={value === option.value}
-                    onClick={() => onChange(option.value)}
-                    className={cn(
-                        'rounded-full px-3.5 py-1.5 text-xs font-semibold transition',
-                        value === option.value
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground'
-                    )}
-                >
-                    {option.label}
-                </button>
-            ))}
-        </div>
-    );
-}
+export { default as Segmented } from '../../ui/Segmented';
 
-/** A step number in a circle, for numbered sections. */
 export function Step({ n, children }: { n: number; children: ReactNode }) {
     return (
         <div className='mb-3 flex items-center gap-2.5'>
@@ -118,8 +80,11 @@ export function Step({ n, children }: { n: number; children: ReactNode }) {
     );
 }
 
-/** Wraps an action that may fail and reports both outcomes. */
-export async function attempt<T>(work: () => Promise<T>, done: string, toast: { success: (m: string) => void; error: (m: string) => void }) {
+export async function attempt<T>(
+    work: () => Promise<T>,
+    done: string,
+    toast: { success: (m: string) => void; error: (m: string) => void }
+) {
     try {
         const result = await work();
         toast.success(done);

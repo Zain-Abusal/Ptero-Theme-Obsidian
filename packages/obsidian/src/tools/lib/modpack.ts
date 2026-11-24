@@ -4,7 +4,6 @@ import { cfDownload, cfFile, cfLatestFile } from './curseforge';
 import { modrinthDownload } from './sources';
 import { fabricServerJar } from './software';
 
-/** The parts of a Modrinth `modrinth.index.json` the installer reads (format version 1). */
 export interface MrIndex {
     readonly formatVersion: number;
     readonly name: string;
@@ -22,9 +21,9 @@ export type LoaderKind = 'fabric' | 'quilt' | 'forge' | 'neoforge';
 
 export interface MrPlan {
     readonly downloads: InstallItem[];
-    /** Client-only files the server does not need. */
+
     readonly skipped: number;
-    /** Paths that tried to leave the server folder; never installed. */
+
     readonly unsafe: string[];
     readonly minecraft: string | null;
     readonly loader: { kind: LoaderKind; version: string } | null;
@@ -37,11 +36,13 @@ const LOADER_KEYS: Record<string, LoaderKind> = {
     neoforge: 'neoforge',
 };
 
-/** A relative path inside the server folder: no leading slash, no `..`, no drive letters. */
 const isSafe = (path: string) =>
-    path.length > 0 && !path.startsWith('/') && !path.includes('\\') && !/^[a-z]:/i.test(path) && path.split('/').every((part) => part !== '..' && part !== '');
+    path.length > 0 &&
+    !path.startsWith('/') &&
+    !path.includes('\\') &&
+    !/^[a-z]:/i.test(path) &&
+    path.split('/').every((part) => part !== '..' && part !== '');
 
-/** Turns a pack index into the downloads the server needs. */
 export function planMrpack(index: MrIndex): MrPlan {
     const downloads: InstallItem[] = [];
     const unsafe: string[] = [];
@@ -80,10 +81,6 @@ export interface MergeFs {
 
 const join = (a: string, b: string) => (a ? `${a}/${b}` : b);
 
-/**
- * Moves everything in `source` into `target` (both relative to the server root). Folders that exist on
- * both sides are merged; files in `source` replace files in `target`. Returns how many entries moved.
- */
 export async function mergeInto(fs: MergeFs, source: string, target = '', depth = 0): Promise<number> {
     if (depth > 16) throw new Error(`${source} is nested too deeply to merge.`);
     const entries = await fs.list(`/${source}`);
@@ -111,16 +108,21 @@ export async function mergeInto(fs: MergeFs, source: string, target = '', depth 
 
 export interface PackContext {
     readonly api: ServerApi;
-    /** The node's upload limit in MiB. */
+
     readonly maxMb: number;
-    /** The jar the egg starts. */
+
     readonly jar: string;
     readonly log: (line: string) => void;
     readonly onFile?: (item: InstallItem, result: 'upload' | 'pull' | 'failed') => void;
 }
 
 const ARCHIVE = 'obsidian-pack.zip';
-const LOADER_NAMES: Record<LoaderKind, string> = { fabric: 'Fabric', quilt: 'Quilt', forge: 'Forge', neoforge: 'NeoForge' };
+const LOADER_NAMES: Record<LoaderKind, string> = {
+    fabric: 'Fabric',
+    quilt: 'Quilt',
+    forge: 'Forge',
+    neoforge: 'NeoForge',
+};
 
 async function installLoader(ctx: PackContext, plan: Pick<MrPlan, 'loader' | 'minecraft'>): Promise<void> {
     const { api, log } = ctx;
@@ -129,23 +131,37 @@ async function installLoader(ctx: PackContext, plan: Pick<MrPlan, 'loader' | 'mi
         return;
     }
     if (plan.loader.kind !== 'fabric') {
-        log(`This pack runs on ${LOADER_NAMES[plan.loader.kind]} ${plan.loader.version}, which has to be installed with its installer. Use a ${LOADER_NAMES[plan.loader.kind]} egg or its installer jar; the mods and configs are in place.`);
+        log(
+            `This pack runs on ${LOADER_NAMES[plan.loader.kind]} ${plan.loader.version}, which has to be installed with its installer. Use a ${LOADER_NAMES[plan.loader.kind]} egg or its installer jar; the mods and configs are in place.`
+        );
         return;
     }
     log(`Installing Fabric ${plan.loader.version} for Minecraft ${plan.minecraft}…`);
     const jar = await fabricServerJar(plan.minecraft, plan.loader.version);
     await api.remove('/', [ctx.jar]).catch(() => undefined);
     await api.install(jar.url, '/', ctx.jar, { maxMb: ctx.maxMb });
-    await api.write(`/${MARKER}`, JSON.stringify({ software: 'fabric', version: plan.minecraft, build: jar.build, installedAt: new Date().toISOString() }, null, 2));
+    await api.write(
+        `/${MARKER}`,
+        JSON.stringify(
+            { software: 'fabric', version: plan.minecraft, build: jar.build, installedAt: new Date().toISOString() },
+            null,
+            2
+        )
+    );
 }
 
 function report(log: (line: string) => void, summary: InstallSummary): void {
-    log(`Downloaded ${summary.uploaded + summary.pulled} files${summary.pulled ? ` (${summary.pulled} by the server)` : ''}.`);
+    log(
+        `Downloaded ${summary.uploaded + summary.pulled} files${summary.pulled ? ` (${summary.pulled} by the server)` : ''}.`
+    );
     for (const { item, error } of summary.failed) log(`✗ ${item.directory}/${item.filename}: ${error}`);
 }
 
-/** Installs a Modrinth modpack: unpack the .mrpack on the server, fetch its files, apply its overrides, set up Fabric. */
-export async function installModrinthPack(ctx: PackContext, projectId: string, gameVersion: string | null): Promise<InstallSummary> {
+export async function installModrinthPack(
+    ctx: PackContext,
+    projectId: string,
+    gameVersion: string | null
+): Promise<InstallSummary> {
     const { api, log } = ctx;
     log('Finding the newest version of the pack…');
     const pack = await modrinthDownload(projectId, [], gameVersion);
@@ -158,7 +174,9 @@ export async function installModrinthPack(ctx: PackContext, projectId: string, g
 
     const index = JSON.parse(await api.read('/modrinth.index.json')) as MrIndex;
     const plan = planMrpack(index);
-    log(`${index.name} ${index.versionId}: ${plan.downloads.length} files for the server, ${plan.skipped} client-only skipped.`);
+    log(
+        `${index.name} ${index.versionId}: ${plan.downloads.length} files for the server, ${plan.skipped} client-only skipped.`
+    );
     for (const path of plan.unsafe) log(`✗ Skipped ${path}: it points outside the server folder.`);
 
     const summary = await api.installMany(plan.downloads, { maxMb: ctx.maxMb, onFile: ctx.onFile });
@@ -174,22 +192,31 @@ export async function installModrinthPack(ctx: PackContext, projectId: string, g
 
     await installLoader(ctx, plan);
     log('Cleaning up…');
-    const leftovers = [ARCHIVE, 'modrinth.index.json', ...['overrides', 'server-overrides'].filter((n) => root.includes(n))];
+    const leftovers = [
+        ARCHIVE,
+        'modrinth.index.json',
+        ...['overrides', 'server-overrides'].filter((n) => root.includes(n)),
+    ];
     await api.remove('/', leftovers).catch(() => undefined);
     log('Done.');
 
     return summary;
 }
 
-/**
- * Installs a CurseForge modpack from its server pack. A server pack that unpacks into one folder is
- * merged up into the server root.
- */
-export async function installCurseForgePack(ctx: PackContext, cfKey: string, projectId: string, page: string, gameVersion: string | null): Promise<void> {
+export async function installCurseForgePack(
+    ctx: PackContext,
+    cfKey: string,
+    projectId: string,
+    page: string,
+    gameVersion: string | null
+): Promise<void> {
     const { api, log } = ctx;
     log('Finding the server pack…');
     const { file } = await cfLatestFile(cfKey, projectId, gameVersion, []);
-    if (!file.serverPackFileId) throw new Error(`${file.fileName} has no server pack on CurseForge. Download one from ${page} and use the Importer.`);
+    if (!file.serverPackFileId)
+        throw new Error(
+            `${file.fileName} has no server pack on CurseForge. Download one from ${page} and use the Importer.`
+        );
     const serverPack = cfDownload(await cfFile(cfKey, projectId, file.serverPackFileId), page);
 
     const before = new Set((await api.listOrEmpty('/')).map((e) => e.name));
@@ -205,5 +232,7 @@ export async function installCurseForgePack(ctx: PackContext, cfKey: string, pro
         await mergeInto(api, added[0].name);
         await api.remove('/', [added[0].name]).catch(() => undefined);
     }
-    log('Done. CurseForge server packs often ship their own start script or loader installer; check the pack’s readme for the jar to run.');
+    log(
+        'Done. CurseForge server packs often ship their own start script or loader installer; check the pack’s readme for the jar to run.'
+    );
 }

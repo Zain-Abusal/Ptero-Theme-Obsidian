@@ -1,9 +1,5 @@
 import { useSyncExternalStore } from 'react';
 
-/**
- * Per-browser conveniences (pinned servers, recent servers, collapsed groups). Storage can be blocked
- * or empty, so every access is guarded and the UI works without it.
- */
 const listeners = new Set<() => void>();
 const memory = new Map<string, string>();
 
@@ -19,9 +15,7 @@ function write(key: string, value: string): void {
     memory.set(key, value);
     try {
         window.localStorage.setItem(key, value);
-    } catch {
-        // Kept in memory for this page.
-    }
+    } catch {}
     listeners.forEach((listener) => listener());
 }
 
@@ -36,9 +30,12 @@ const subscribe = (listener: () => void) => {
     };
 };
 
-/** A JSON value in storage that re-renders every reader when any of them writes it. */
 export function useStored<T>(key: string, fallback: T): [T, (next: T) => void] {
-    const raw = useSyncExternalStore(subscribe, () => read(`obsidian:${key}`), () => null);
+    const raw = useSyncExternalStore(
+        subscribe,
+        () => read(`obsidian:${key}`),
+        () => null
+    );
     let value = fallback;
     try {
         value = raw === null ? fallback : (JSON.parse(raw) as T);
@@ -59,14 +56,14 @@ export function usePins(): { pins: string[]; isPinned: (uuid: string) => boolean
     };
 }
 
-/** Most recently opened servers first, by identifier. */
 export function useRecent(): { recent: string[]; touch: (identifier: string) => void } {
     const [recent, setRecent] = useStored<string[]>('recent', []);
 
     return {
         recent,
         touch: (identifier) => {
-            if (recent[0] !== identifier) setRecent([identifier, ...recent.filter((r) => r !== identifier)].slice(0, 20));
+            if (recent[0] !== identifier)
+                setRecent([identifier, ...recent.filter((r) => r !== identifier)].slice(0, 20));
         },
     };
 }

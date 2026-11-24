@@ -24,7 +24,6 @@ afterEach(() => {
     host = undefined;
 });
 
-/** Pages that greet or describe the signed-in user read it from the panel's store, which a test host fills. */
 const signedIn = () => (host = createExtensionTestHost());
 
 test('frames every signed-in page in the sidebar shell with the switcher and Quickcast', () => {
@@ -45,7 +44,7 @@ test('groups a server area into sections under the server card', () => {
     const server = screen.getByRole('navigation', { name: 'Server' });
     expect(within(server).getByRole('button', { name: /Basic/ })).not.toBeNull();
     expect(within(server).getByRole('link', { name: /Console/ })).not.toBeNull();
-    // The sidebar card carries power controls.
+
     expect(screen.getByRole('button', { name: 'Restart' })).not.toBeNull();
 });
 
