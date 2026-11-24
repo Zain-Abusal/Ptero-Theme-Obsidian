@@ -1,0 +1,372 @@
+{
+    "$schema": "../../node_modules/@pterodactyl/sdk/manifest.schema.json",
+    "id": "obsidian",
+    "type": "theme",
+    "name": "Obsidian",
+    "version": "1.0.0",
+    "description": "A premium theme with built-in Minecraft tools: grouped sidebar, server switcher, stats dashboard and console, plus players, versions, plugins, mods, kits, properties, Votifier and an importer. Every colour, the logo and the layout are editable from Admin > Themes.",
+    "icon": "gem",
+    "requires": {
+        "panel": "^2.0.0-dev",
+        "sdk": ">=2.0.0-beta.5 <3.0"
+    },
+    "ui": {
+        "entry": "dist/client.js",
+        "screens": [
+            {
+                "id": "players",
+                "area": "server",
+                "path": "mc/players",
+                "nav": {
+                    "label": "Players",
+                    "icon": "user-round",
+                    "group": "Basic"
+                },
+                "permission": [
+                    "control.console"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "versions",
+                "area": "server",
+                "path": "mc/versions",
+                "nav": {
+                    "label": "Versions",
+                    "icon": "layers",
+                    "group": "Minecraft"
+                },
+                "permission": [
+                    "file.create"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "plugins",
+                "area": "server",
+                "path": "mc/plugins",
+                "nav": {
+                    "label": "Plugins",
+                    "icon": "puzzle",
+                    "group": "Minecraft"
+                },
+                "permission": [
+                    "file.create"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "mods",
+                "area": "server",
+                "path": "mc/mods",
+                "nav": {
+                    "label": "Mods",
+                    "icon": "blocks",
+                    "group": "Minecraft"
+                },
+                "permission": [
+                    "file.create"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "kits",
+                "area": "server",
+                "path": "mc/kits",
+                "nav": {
+                    "label": "Kits",
+                    "icon": "package",
+                    "group": "Minecraft",
+                    "badge": "New"
+                },
+                "permission": [
+                    "file.create"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "properties",
+                "area": "server",
+                "path": "mc/properties",
+                "nav": {
+                    "label": "Properties",
+                    "icon": "sliders-horizontal",
+                    "group": "Minecraft"
+                },
+                "permission": [
+                    "file.update"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "votifier",
+                "area": "server",
+                "path": "mc/votifier",
+                "nav": {
+                    "label": "Votifier",
+                    "icon": "vote",
+                    "group": "Minecraft",
+                    "badge": "New"
+                },
+                "permission": [
+                    "file.update"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "importer",
+                "area": "server",
+                "path": "mc/importer",
+                "nav": {
+                    "label": "Importer",
+                    "icon": "download",
+                    "group": "Tools",
+                    "badge": "New"
+                },
+                "permission": [
+                    "file.create"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "packs",
+                "area": "server",
+                "path": "mc/packs",
+                "nav": {
+                    "label": "Packs",
+                    "icon": "package-open",
+                    "group": "Minecraft",
+                    "badge": "New"
+                },
+                "permission": [
+                    "file.create"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "worlds",
+                "area": "server",
+                "path": "mc/worlds",
+                "nav": {
+                    "label": "Worlds",
+                    "icon": "earth",
+                    "group": "Minecraft"
+                },
+                "permission": [
+                    "file.update"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "scheduler",
+                "area": "server",
+                "path": "mc/scheduler",
+                "nav": {
+                    "label": "Restarts",
+                    "icon": "calendar-clock",
+                    "group": "Tools"
+                },
+                "permission": [
+                    "schedule.create"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
+                "id": "doctor",
+                "area": "server",
+                "path": "mc/doctor",
+                "nav": {
+                    "label": "Crash doctor",
+                    "icon": "stethoscope",
+                    "group": "Tools"
+                },
+                "permission": [
+                    "file.read"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            }
+        ]
+    },
+    "theme": {
+        "stylesheet": "dist/theme.css",
+        "schemes": [
+            "dark",
+            "light"
+        ],
+        "settings": {
+            "logo": {
+                "type": "image",
+                "label": "Logo",
+                "help": "Shown in the sidebar and on the sign-in page. Without one, the panel name is shown beside a mark.",
+                "tab": "Branding",
+                "token": "--brand-logo"
+            },
+            "brandName": {
+                "type": "text",
+                "label": "Brand name",
+                "help": "Leave empty to use the panel name from Admin > Settings.",
+                "tab": "Branding",
+                "default": "",
+                "maxLength": 40
+            },
+            "tagline": {
+                "type": "text",
+                "label": "Sign-in tagline",
+                "tab": "Branding",
+                "default": "Your servers, beautifully managed.",
+                "maxLength": 100
+            },
+            "footer": {
+                "type": "text",
+                "label": "Footer text",
+                "help": "Shown under every page. Leave empty to keep the panel's copyright line.",
+                "tab": "Branding",
+                "default": "",
+                "maxLength": 120
+            },
+            "accent": {
+                "type": "color",
+                "label": "Primary colour",
+                "help": "Primary buttons, selected items and focus rings.",
+                "tab": "Colours",
+                "default": "#f4f4f5",
+                "token": "--obs-accent"
+            },
+            "accentText": {
+                "type": "color",
+                "label": "Text on primary",
+                "tab": "Colours",
+                "default": "#0a0a0a",
+                "token": "--obs-accent-foreground"
+            },
+            "success": {
+                "type": "color",
+                "label": "Online colour",
+                "help": "Running servers, healthy gauges and enabled switches.",
+                "tab": "Colours",
+                "default": "#6ee7a0",
+                "token": "--obs-success"
+            },
+            "surface": {
+                "type": "select",
+                "label": "Surface",
+                "tab": "Colours",
+                "options": {
+                    "graphite": "Graphite",
+                    "midnight": "Midnight blue",
+                    "oled": "OLED black"
+                },
+                "default": "graphite",
+                "attribute": "data-obs-surface"
+            },
+            "radius": {
+                "type": "number",
+                "label": "Corner radius",
+                "tab": "Layout",
+                "default": 14,
+                "min": 0,
+                "max": 28,
+                "step": 1,
+                "unit": "px",
+                "token": "--obs-radius"
+            },
+            "density": {
+                "type": "select",
+                "label": "Density",
+                "tab": "Layout",
+                "options": {
+                    "comfortable": "Comfortable",
+                    "compact": "Compact"
+                },
+                "default": "comfortable",
+                "attribute": "data-obs-density"
+            },
+            "contentWidth": {
+                "type": "number",
+                "label": "Content width",
+                "tab": "Layout",
+                "default": 76,
+                "min": 56,
+                "max": 120,
+                "step": 2,
+                "unit": "rem",
+                "token": "--obs-content-width"
+            },
+            "decor": {
+                "type": "toggle",
+                "label": "Background decoration",
+                "help": "Dot grid, rings and an outlined cube behind the pages.",
+                "tab": "Layout",
+                "default": true,
+                "attribute": "data-obs-decor"
+            },
+            "sidebarServer": {
+                "type": "toggle",
+                "label": "Server card in the sidebar",
+                "help": "Status, players and power buttons above a server's navigation.",
+                "tab": "Layout",
+                "default": true
+            },
+            "greeting": {
+                "type": "toggle",
+                "label": "Dashboard greeting",
+                "tab": "Dashboard",
+                "default": true
+            },
+            "dashboardStats": {
+                "type": "toggle",
+                "label": "Dashboard totals",
+                "help": "Servers, online, CPU and memory tiles above the list.",
+                "tab": "Dashboard",
+                "default": true
+            },
+            "switcherKey": {
+                "type": "text",
+                "label": "Server switcher key",
+                "help": "One key that opens the server switcher anywhere. Leave empty to turn the shortcut off.",
+                "tab": "Dashboard",
+                "default": "s",
+                "maxLength": 1
+            },
+            "curseforgeKey": {
+                "type": "text",
+                "label": "CurseForge API key",
+                "help": "Turns on CurseForge in the plugin, mod and pack browsers. Get one at console.curseforge.com. Theme settings reach every signed-in user's browser, so use a key made only for this panel.",
+                "tab": "Integrations",
+                "default": "",
+                "maxLength": 255
+            },
+            "livePlayers": {
+                "type": "toggle",
+                "label": "Live player counts",
+                "help": "Shows players online on the dashboard and in the sidebar, looked up through the public mcsrvstat.us service by each server's public address.",
+                "tab": "Integrations",
+                "default": true
+            }
+        }
+    }
+}
