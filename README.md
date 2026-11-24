@@ -11,7 +11,7 @@ using the panel's native theme and extension system. One package, no Blueprint.
 2. Upload it on **Admin > Themes**, or from the panel's directory:
 
    ```sh
-   php artisan p:extension:install obsidian-1.1.0.pteroext --enable
+   php artisan p:extension:install obsidian-1.2.0.pteroext --enable
    php artisan p:theme:activate obsidian
    ```
 

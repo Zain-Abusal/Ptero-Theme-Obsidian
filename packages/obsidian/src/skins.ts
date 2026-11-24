@@ -17,7 +17,6 @@ const sizes: Record<ButtonState['size'], string> = {
     xlarge: 'h-11 w-full px-6 text-sm',
 };
 
-/** Pill buttons: a solid primary, quiet tinted danger and caution, and a hairline secondary. */
 const button = skin('Button', {
     root: ({ color, size, secondary }) =>
         [
@@ -31,7 +30,6 @@ const button = skin('Button', {
         ].join(' '),
 });
 
-/** Cards on a hairline, a larger radius and a quiet header. */
 const card = skin('Card', {
     root: (state, below) => below('rounded-xl border border-border bg-card shadow-none'),
     header: (state, below) => below('border-b border-border px-5 py-3.5'),
@@ -41,7 +39,8 @@ const card = skin('Card', {
 
 const stat = skin('Stat', {
     root: (state, below) => below('rounded-xl bg-card shadow-sm'),
-    label: (state, below) => below('font-sans text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground'),
+    label: (state, below) =>
+        below('font-sans text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground'),
     value: (state, below) => below('font-header font-bold tracking-tight tabular-nums'),
 });
 
@@ -66,7 +65,6 @@ const switchSkin = skin('Switch', {
     label: (state, below) => below('normal-case tracking-normal text-sm font-medium text-foreground'),
 });
 
-/** Form labels in sentence case: quieter than the shouted caps of classic. */
 const label = skin('Label', {
     root: (state, below) => below('normal-case tracking-normal text-[0.8rem] font-semibold text-foreground/85'),
 });

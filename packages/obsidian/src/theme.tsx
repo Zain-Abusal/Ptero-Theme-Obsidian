@@ -6,17 +6,14 @@ import Footer from './ui/Footer';
 import { isMinecraft } from './tools/lib/minecraft';
 import { applyStoredSurface } from './lib/surface';
 
-// Remember the admin's surface, then apply the user's own before the first paint.
 if (typeof document !== 'undefined') {
     const html = document.documentElement;
     html.dataset.obsDefaultSurface ??= html.dataset.obsSurface ?? 'graphite';
     applyStoredSurface();
 }
 
-/** The Minecraft pages exist only on Minecraft (Java) servers. */
 const visible = ({ server }: { server?: Parameters<typeof isMinecraft>[0] }) => isMinecraft(server);
 
-/** Page id → its lazily loaded screen. Paths, navigation and permissions are in extension.json. */
 const SCREENS = {
     players: () => import('./tools/screens/PlayersScreen'),
     versions: () => import('./tools/screens/VersionsScreen'),
@@ -32,10 +29,6 @@ const SCREENS = {
     doctor: () => import('./tools/screens/DoctorScreen'),
 };
 
-/**
- * Obsidian. Everything that imports `@pterodactyl/sdk` is a lazy view, so the entry stays small: the
- * skins, the sign-in frame, the thin area layouts and the footer load first.
- */
 export default defineTheme({
     ui: { ...obsidianSkins, PageFooter: Footer },
     views: {

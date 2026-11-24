@@ -16,7 +16,7 @@ test('plans countdown warnings before a restart', () => {
         { action: 'command', payload: 'say Restarting in 10 seconds!', time_offset: 50 },
         { action: 'power', payload: 'restart', time_offset: 10 },
     ]);
-    // The offsets add up to the lead: the restart lands exactly on time.
+
     expect(plan.tasks.reduce((sum, t) => sum + t.time_offset, 0)).toBe(plan.lead);
 });
 
@@ -34,9 +34,9 @@ test('never asks the panel to wait more than 900 seconds between tasks', () => {
     expect(plan.tasks.every((t) => t.time_offset <= MAX_OFFSET)).toBe(true);
     expect(plan.tasks.reduce((sum, t) => sum + t.time_offset, 0)).toBe(3600);
     expect(plan.tasks.map((t) => t.payload)).toContain('say in 45 minutes');
-    // A lone long warning still reaches the restart in steps of at most 900 seconds.
+
     expect(planRestart([1800], 'x').tasks.every((t) => t.time_offset <= MAX_OFFSET)).toBe(true);
-    // No warnings: restart straight away.
+
     expect(planRestart([], 'x')).toEqual({ lead: 0, tasks: [{ action: 'power', payload: 'restart', time_offset: 0 }] });
 });
 
@@ -112,7 +112,7 @@ test('opens only plausible world folders, likely names first', () => {
         { name: 'world', dimensions: ['nether', 'the_end'] },
         { name: 'lobby', dimensions: [] },
     ]);
-    // A lone Nether folder without its base world still shows.
+
     expect(groupWorlds(['old_nether'])).toEqual([{ name: 'old_nether', dimensions: [] }]);
     expect(asideName('world', new Date('2026-11-24T10:00:00Z'))).toBe('world-old-2026-11-24');
 });
@@ -190,7 +190,7 @@ test('console tools render inside a server page and filter the buffered output',
     };
 
     const view = render(createElement(host.Wrapper, null, createElement(ConsoleTools, { server, command, overlay })));
-    // The host mounts its router asynchronously; listen only once the tools are on screen.
+
     await screen.findByRole('button', { name: 'Warnings' });
     await act(async () => {
         host.emitWebsocket('console output', "[12:00:00 INFO]: Done\n[12:00:01 WARN]: Can't keep up!");
@@ -202,7 +202,7 @@ test('console tools render inside a server page and filter the buffered output',
     expect(overlay.contains(log)).toBe(true);
     expect(log.textContent).toContain("Can't keep up!");
     expect(log.textContent).not.toContain('Done');
-    expect(screen.getByRole('button', { name: 'Copy console output' }).hasAttribute('disabled')).toBe(false);
+    expect(screen.getByRole('button', { name: 'More console actions' })).not.toBeNull();
 
     view.unmount();
     host.dispose();

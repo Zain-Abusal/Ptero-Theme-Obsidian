@@ -15,7 +15,6 @@ export interface Kit {
     readonly items: readonly KitItem[];
 }
 
-/** Hand-picked bundles. Every Modrinth slug here was checked to exist with Paper builds. */
 export const kits: Kit[] = [
     {
         id: 'survival',
@@ -105,7 +104,6 @@ export const kits: Kit[] = [
     },
 ];
 
-/** The newest asset of a GitHub release that matches. */
 export async function githubDownload(repo: string, asset: RegExp): Promise<{ url: string; filename: string }> {
     const release = await getJson<{ assets: { name: string; browser_download_url: string }[] }>(
         `https://api.github.com/repos/${repo}/releases/latest`
@@ -121,5 +119,4 @@ export async function kitItemDownload(item: KitItem, loaders: string[], gameVers
     return githubDownload(item.repo, item.asset);
 }
 
-/** Matching keys for an item against installed jar names. */
 export const itemKeys = (item: KitItem) => [item.name, item.source === 'github' ? item.repo.split('/')[1] : item.slug];

@@ -22,7 +22,6 @@ import {
     type LucideIcon,
 } from 'lucide-react';
 
-/** The template icons a server can wear when it has no server-icon.png. */
 export const GLYPHS: Record<string, LucideIcon> = {
     box: Box,
     pickaxe: Pickaxe,

@@ -2,13 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { http, useServerWebsocketEvent } from '@pterodactyl/sdk';
 import { capLines, plainLine } from '../../tools/lib/ops-logs';
 
-/** Lines kept for search, copy and download. */
 export const BUFFER = 2000;
 
-/**
- * The console as text: Wings' recent lines to start with, then every live line. Updates are batched
- * once per frame so a chatty server does not re-render the page per line.
- */
 export function useConsoleBuffer(id: string): string[] {
     const enabled = id !== '';
     const [lines, setLines] = useState<string[]>([]);

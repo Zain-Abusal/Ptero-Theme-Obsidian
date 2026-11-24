@@ -9,7 +9,8 @@ import { createTestServer } from '@pterodactyl/sdk/testing';
 import theme from '../theme';
 
 test('edits server.properties in place, keeping comments, order and escapes', () => {
-    const text = '#Minecraft server properties\n#Mon Nov 24\nmotd=A \\u00A7aMinecraft Server\nmax-players=20\nwhite-list=false\n';
+    const text =
+        '#Minecraft server properties\n#Mon Nov 24\nmotd=A \\u00A7aMinecraft Server\nmax-players=20\nwhite-list=false\n';
     const file = parseProperties(text);
 
     expect(file.values.motd).toBe('A §aMinecraft Server');
@@ -19,7 +20,7 @@ test('edits server.properties in place, keeping comments, order and escapes', ()
     expect(out).toBe(
         '#Minecraft server properties\n#Mon Nov 24\nmotd=A \\u00A7aMinecraft Server\nmax-players=50\nwhite-list=false\nlevel-seed=abc\n'
     );
-    // Unchanged values keep their original line byte for byte.
+
     expect(serializeProperties(file, file.values)).toBe(text);
 });
 
@@ -39,7 +40,7 @@ test('reads both forms of the list command', () => {
         names: ['Alex', 'Steve'],
     });
     expect(parseList('There are 0 of a max of 10 players online:')).toEqual({ online: 0, max: 10, names: [] });
-    // Older servers print the names on the next line.
+
     expect(parseList('There are 1/20 players online:')).toEqual({ online: 1, max: 20, names: null });
     expect(parseList('Done (3.2s)! For help, type "help"')).toBeNull();
 });
@@ -62,7 +63,7 @@ test('matches projects to installed jars by name', () => {
     expect(looksInstalled(jars, 'luckperms')).toBe(true);
     expect(looksInstalled(jars, 'chunky')).toBe(true);
     expect(looksInstalled(jars, 'worldguard')).toBe(false);
-    // Too short to match safely.
+
     expect(looksInstalled(jars, 'wo')).toBe(false);
 });
 
@@ -74,7 +75,9 @@ test('shows the screens only on Minecraft servers', () => {
 });
 
 test('registers every screen the manifest declares, each with a visibility rule', async () => {
-    const manifest = (await import('../../extension.json')).default as { ui: { screens: { id: string; when?: { runtime?: boolean } }[] } };
+    const manifest = (await import('../../extension.json')).default as {
+        ui: { screens: { id: string; when?: { runtime?: boolean } }[] };
+    };
     const register = vi.fn();
 
     theme.setup!({

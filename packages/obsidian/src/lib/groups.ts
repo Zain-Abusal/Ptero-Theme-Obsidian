@@ -1,9 +1,5 @@
 import type { NavItem } from '@pterodactyl/sdk/theme';
 
-/**
- * Core server pages have no group, so Obsidian files them by id; extension screens name their own
- * group in their manifest (`nav.group`) and land in "Extensions" without one.
- */
 const CORE_GROUPS: Record<string, string> = {
     index: 'Basic',
     files: 'Basic',

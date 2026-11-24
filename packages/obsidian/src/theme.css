@@ -1,7 +1,5 @@
-/* The panel stylesheet with every class the panel uses, then Obsidian's own. Plain Tailwind, no prefix. */
 @import '@pterodactyl/sdk/theme-entry.css';
 
-/* #region fonts: bundled (SIL OFL, see fonts/OFL.txt), copied beside dist/theme.css by the build. */
 @font-face {
     font-family: 'Obsidian Sans';
     font-style: normal;
@@ -18,28 +16,15 @@
     src: url('./fonts/geist-mono.woff2') format('woff2');
 }
 
-@font-face {
-    font-family: 'Obsidian Serif';
-    font-style: italic;
-    font-weight: 400;
-    font-display: swap;
-    src: url('./fonts/instrument-serif-italic.woff2') format('woff2');
-}
-
 @theme {
     --font-sans: 'Obsidian Sans', ui-sans-serif, system-ui, sans-serif;
     --font-header: 'Obsidian Sans', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'Obsidian Mono', ui-monospace, 'SFMono-Regular', monospace;
-    --font-serif: 'Obsidian Serif', Georgia, serif;
 
-    /* Hairlines instead of drop shadows: every card, tile and dialog reads these. */
     --shadow-lg: 0 0 0 1px var(--border), 0 24px 48px -24px rgb(0 0 0 / 0.5);
     --shadow-xl: 0 0 0 1px var(--border), 0 32px 64px -24px rgb(0 0 0 / 0.6);
 }
-/* #endregion fonts */
 
-/* #region tokens */
-/* Both schemes. Settings write --obs-* on :root:root, which outranks these fallbacks. */
 :root {
     --radius: var(--obs-radius, 14px);
     --layout-content-width: var(--obs-content-width, 76rem);
@@ -71,21 +56,34 @@
     --theme-color: var(--background);
 }
 
-/*
- * Surfaces. Every surface is one hue (--obs-h) and chroma (--obs-c); both schemes derive all their
- * roles from them, so a surface is a whole look in dark and in light. Admins pick the default on
- * Admin > Themes; users can switch from the sidebar (stored per browser).
- */
 :root {
     --obs-h: 0;
     --obs-c: 0;
 }
-[data-obs-surface='midnight'] { --obs-h: 262; --obs-c: 0.028; }
-[data-obs-surface='nord'] { --obs-h: 235; --obs-c: 0.022; }
-[data-obs-surface='forest'] { --obs-h: 158; --obs-c: 0.02; }
-[data-obs-surface='ember'] { --obs-h: 45; --obs-c: 0.018; }
-[data-obs-surface='rose'] { --obs-h: 355; --obs-c: 0.022; }
-[data-obs-surface='amethyst'] { --obs-h: 300; --obs-c: 0.03; }
+[data-obs-surface='midnight'] {
+    --obs-h: 262;
+    --obs-c: 0.028;
+}
+[data-obs-surface='nord'] {
+    --obs-h: 235;
+    --obs-c: 0.022;
+}
+[data-obs-surface='forest'] {
+    --obs-h: 158;
+    --obs-c: 0.02;
+}
+[data-obs-surface='ember'] {
+    --obs-h: 45;
+    --obs-c: 0.018;
+}
+[data-obs-surface='rose'] {
+    --obs-h: 355;
+    --obs-c: 0.022;
+}
+[data-obs-surface='amethyst'] {
+    --obs-h: 300;
+    --obs-c: 0.03;
+}
 
 .dark {
     --obs-tone: oklch(0.17 var(--obs-c) var(--obs-h));
@@ -139,7 +137,6 @@
     --terminal-ansi-bright-white: #ffffff;
 }
 
-/* OLED: true black for phones and wall displays, whatever the hue. */
 .dark[data-obs-surface='oled'] {
     --background: #000;
     --sidebar: #050505;
@@ -156,10 +153,6 @@
     --terminal-background: #000;
 }
 
-/*
- * Light: warm paper with real (soft) shadows instead of hairlines alone, ink-coloured primary and
- * darker status colours so text on white keeps its contrast. The terminal stays dark.
- */
 .light {
     --obs-lc: calc(var(--obs-c) * 0.45 + 0.004);
     --obs-lh: calc(var(--obs-h) + 0);
@@ -190,7 +183,6 @@
     --obs-decor-ink: rgb(0 0 0 / 0.055);
     --obs-lift: 0 1px 2px rgb(20 18 10 / 0.05), 0 8px 24px -12px rgb(20 18 10 / 0.12);
 
-    /* The primary colour is tuned for dark surfaces; light uses ink so buttons keep their contrast. */
     --primary: oklch(0.22 calc(var(--obs-lc) * 2) var(--obs-lh));
     --primary-foreground: #fafaf9;
     --success: color-mix(in oklab, var(--obs-success, #6ee7a0) 45%, #0b7a3b);
@@ -209,7 +201,6 @@
     --terminal-selection-foreground: #ffffff;
 }
 
-/* Light lifts surfaces with soft shadows; dark keeps hairlines. */
 @theme {
     --shadow-sm: 0 0 0 1px var(--border), var(--obs-lift);
     --shadow-md: 0 0 0 1px var(--border), var(--obs-lift);
@@ -219,10 +210,7 @@
     --spacing: 0.215rem;
     --layout-gutter: 1rem;
 }
-/* #endregion tokens */
 
-/* #region utilities */
-/* A card surface with a hairline: the building block of every Obsidian panel. */
 @utility obs-surface {
     background-color: var(--card);
     border: 1px solid var(--border);
@@ -230,7 +218,6 @@
     box-shadow: var(--obs-lift);
 }
 
-/* A row or card that lifts a little on hover. Transform and shadow only, so it stays on the compositor. */
 @utility obs-hover {
     transition:
         transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -243,7 +230,6 @@
     }
 }
 
-/* Small caps labels above values, like SERVERS or CPU. */
 @utility obs-eyebrow {
     font-size: 0.6875rem;
     font-weight: 600;
@@ -252,7 +238,6 @@
     color: var(--muted-foreground);
 }
 
-/* A keyboard key. */
 @utility obs-kbd {
     display: inline-flex;
     align-items: center;
@@ -269,7 +254,6 @@
     color: var(--muted-foreground);
 }
 
-/* The sidebar's links. `data-status=active` comes from PanelLink and NavigationLink. */
 @utility obs-nav-link {
     display: flex;
     align-items: center;
@@ -303,9 +287,7 @@
         opacity: 0.85;
     }
 }
-/* #endregion utilities */
 
-/* #region decoration */
 @layer base {
     body {
         background-color: var(--background);
@@ -315,17 +297,12 @@
         background-color: var(--selection);
     }
 
-    /* Tabular numbers everywhere a value changes live. */
     [data-ui='stat'] [data-part='value'],
     .obs-num {
         font-variant-numeric: tabular-nums;
     }
 }
 
-/*
- * The background decoration: a dot grid that fades out below the header, two rings in the top
- * corner and an outlined cube in the bottom corner. Fixed, behind everything, never interactive.
- */
 .obs-decor {
     display: none;
 }
@@ -372,34 +349,22 @@
     }
 }
 
-/* The page sits above the decoration. */
-.obs-shell > * {
-    position: relative;
-    z-index: 1;
-}
-/* #endregion decoration */
-
-/* #region components */
 @layer components {
-    /* Dialogs and menus over a blurred page. */
     [data-ui='dialog'][data-part='backdrop'] {
         backdrop-filter: blur(6px);
     }
 
-    /* Account sections title themselves on the left, so the form cards drop their own headings. */
     .obs-account-form [data-ui='card'] > [data-part='header'],
     .obs-account-form > div > h2,
     .obs-account-form > div > h3 {
         display: none;
     }
 
-    /* The terminal sits flush inside its card. */
     [data-ui='card'][data-obs='terminal'] [data-part='body'] {
         padding: 0;
     }
 }
 
-/* Ring gauges animate their arc. */
 .obs-gauge circle[data-arc] {
     transition: stroke-dashoffset 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -409,13 +374,40 @@
         transition: none;
     }
 }
-/* #endregion components */
 
-/* #region motion */
-/*
- * Route changes: the panel cross-fades the page with the View Transitions API. Naming the sidebar and
- * the top bar keeps them still while only the page fades and rises a few pixels.
- */
+.obs-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+        grid-template-rows 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 180ms ease;
+}
+
+.obs-collapse[data-open] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+.obs-segmented-thumb {
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    left: 0;
+    width: var(--seg-w, 0);
+    transform: translateX(var(--seg-x, 0));
+    border-radius: 999px;
+    background: var(--primary);
+    transition:
+        transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        width 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#obsidian-sidebar > *,
+.obs-sidebar-section > * {
+    flex-shrink: 0;
+}
+
 #obsidian-sidebar {
     view-transition-name: obs-sidebar;
 }
@@ -440,7 +432,6 @@
     animation: 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both obs-page-in;
 }
 
-/* Switching dark and light: a circle grows from the button that was pressed (see SchemeButton). */
 @keyframes obs-scheme-reveal {
     from {
         clip-path: circle(0 at var(--obs-vt-x, 50%) var(--obs-vt-y, 50%));
@@ -458,12 +449,11 @@ html.obs-scheme-switching::view-transition-new(root) {
     animation: 480ms cubic-bezier(0.4, 0, 0.2, 1) both obs-scheme-reveal;
 }
 
-html.obs-scheme-switching::view-transition-group(obs-sidebar),
-html.obs-scheme-switching::view-transition-group(obs-topbar) {
-    display: none;
+html.obs-scheme-switching #obsidian-sidebar,
+html.obs-scheme-switching .obs-topbar {
+    view-transition-name: none;
 }
 
-/* The sliding highlight behind the active sidebar link. */
 .obs-indicator {
     position: absolute;
     left: 0;
@@ -493,7 +483,6 @@ html.obs-scheme-switching::view-transition-group(obs-topbar) {
     background: var(--obs-server-tint, var(--primary));
 }
 
-/* With the indicator drawn, active links stop painting their own background. */
 [data-obs-indicated] .obs-nav-link[data-status='active'] {
     background: transparent;
     box-shadow: none;
@@ -503,7 +492,6 @@ html.obs-scheme-switching::view-transition-group(obs-topbar) {
     position: relative;
 }
 
-/* Popovers, menus and dialogs scale in from where they open. */
 @keyframes obs-pop {
     from {
         opacity: 0;
@@ -523,13 +511,11 @@ html.obs-scheme-switching::view-transition-group(obs-topbar) {
     }
 }
 
-/* Lists stagger in once, on first paint; --i is the item's index. */
 .obs-stagger > * {
     animation: obs-fade-up 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     animation-delay: calc(min(var(--i, 0), 12) * 28ms);
 }
 
-/* Running servers breathe. */
 @keyframes obs-breathe {
     50% {
         box-shadow: 0 0 0 5px color-mix(in oklab, var(--success) 0%, transparent);
@@ -550,4 +536,3 @@ html.obs-scheme-switching::view-transition-group(obs-topbar) {
         transition-duration: 1ms !important;
     }
 }
-/* #endregion motion */

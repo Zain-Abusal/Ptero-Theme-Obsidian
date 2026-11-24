@@ -8,11 +8,6 @@ const notices: Record<NonNullable<ServerConsoleModel['notice']>, string> = {
     transferring: 'The server is moving to another node.',
 };
 
-/**
- * The console: a tall terminal first, live tiles under it, then the graphs. Power controls live in the
- * sidebar's server card, so they show here only where that card does not (small screens, or the
- * card turned off).
- */
 export default function ConsolePage({ model, active }: ViewProps<'page.server.console'>) {
     const { sidebarServer } = useObsidian();
 

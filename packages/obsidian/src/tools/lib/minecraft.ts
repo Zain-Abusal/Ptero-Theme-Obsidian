@@ -1,7 +1,17 @@
 import type { SdkServer } from '@pterodactyl/sdk';
 import type { ServerApi } from './api';
 
-export type Software = 'paper' | 'purpur' | 'folia' | 'vanilla' | 'fabric' | 'velocity' | 'spigot' | 'forge' | 'neoforge' | 'unknown';
+export type Software =
+    | 'paper'
+    | 'purpur'
+    | 'folia'
+    | 'vanilla'
+    | 'fabric'
+    | 'velocity'
+    | 'spigot'
+    | 'forge'
+    | 'neoforge'
+    | 'unknown';
 
 export interface Installed {
     readonly software: Software;
@@ -9,13 +19,8 @@ export interface Installed {
     readonly build?: string | null;
 }
 
-/** The marker the Versions screen writes after an install, so later screens know exactly what runs. */
 export const MARKER = '.obsidian-software.json';
 
-/**
- * Whether a server runs Minecraft: Java eggs carry the `eula` or `java_version` feature, run a jar, or use a
- * Java image. Synchronous, so it can gate the navigation.
- */
 export function isMinecraft(server: SdkServer | undefined): boolean {
     if (!server) return false;
     const a = server.attributes;
@@ -32,9 +37,9 @@ export function isMinecraft(server: SdkServer | undefined): boolean {
 }
 
 export const isProxy = (software: Software) => software === 'velocity';
-export const isModded = (software: Software) => software === 'fabric' || software === 'forge' || software === 'neoforge';
+export const isModded = (software: Software) =>
+    software === 'fabric' || software === 'forge' || software === 'neoforge';
 
-/** Paper writes "1.21.4-232-abc (MC: 1.21.4)" into version_history.json. */
 const fromHistory = (raw: string | null): string | null => {
     if (!raw) return null;
     try {
@@ -45,16 +50,13 @@ const fromHistory = (raw: string | null): string | null => {
     }
 };
 
-/** What the server runs: the marker first, then the files each server type leaves behind. */
 export async function detect(api: ServerApi): Promise<Installed> {
     const marker = await api.readOrNull(`/${MARKER}`);
     if (marker) {
         try {
             const parsed = JSON.parse(marker) as Installed;
             if (parsed.software) return parsed;
-        } catch {
-            // Fall through to the heuristics.
-        }
+        } catch {}
     }
 
     const root = (await api.listOrEmpty('/')).map((e) => e.name.toLowerCase());
@@ -88,7 +90,6 @@ export const softwareLabel: Record<Software, string> = {
     unknown: 'Unknown',
 };
 
-/** The loaders a server's plugins or mods are built for, for Modrinth's filters. */
 export function loadersFor(software: Software): string[] {
     switch (software) {
         case 'folia':

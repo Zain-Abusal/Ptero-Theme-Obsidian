@@ -5,17 +5,14 @@ import { Button, Dialog, cn, http, httpErrorToHuman, toast, type SdkServer } fro
 import { can } from '../lib/servers';
 import { GLYPHS, GLYPH_NAMES } from '../lib/glyphs';
 import ServerIcon, { TemplateIcon, iconQueryKey } from '../lib/serverIcon';
+import Collapse from '../ui/Collapse';
 import { TINTS, defaultTint, useSaveServerMeta, useServerMeta, type ServerMeta } from '../lib/serverMeta';
 import { toServerIcon, uploadFiles } from '../lib/upload';
 
 const label = 'mb-1.5 block text-xs font-semibold text-muted-foreground';
-const field = 'h-10 w-full rounded-lg border border-input-border bg-input px-3 text-sm outline-none focus:ring-2 focus:ring-ring';
+const field =
+    'h-10 w-full rounded-lg border border-input-border bg-input px-3 text-sm outline-none focus:ring-2 focus:ring-ring';
 
-/**
- * Name, group, colour, icon and a note for one server. Group, colour, icon and note go to the server's
- * `.obsidian.json`; the name goes through the panel's rename (when the user may rename); an uploaded
- * image becomes the server's real server-icon.png, which Minecraft shows in the server list too.
- */
 export default function CustomizeServer({ server, onClose }: { server: SdkServer; onClose: () => void }) {
     const { identifier, uuid } = server.attributes;
     const current = useServerMeta(identifier);
@@ -29,8 +26,9 @@ export default function CustomizeServer({ server, onClose }: { server: SdkServer
     const [glyph, setGlyph] = useState<string | null>(current.icon?.glyph ?? null);
     const [note, setNote] = useState(current.note ?? '');
     const [busy, setBusy] = useState(false);
+    const [moreIcons, setMoreIcons] = useState(false);
     const tint = color || defaultTint(uuid);
-    // Groups other servers already use, from the metadata the lists have loaded.
+
     const suggestions = useMemo(
         () =>
             [
@@ -43,6 +41,26 @@ export default function CustomizeServer({ server, onClose }: { server: SdkServer
             ].sort(),
         [client]
     );
+
+    const glyphButton = (g: string) => {
+        const Glyph = GLYPHS[g];
+        return (
+            <button
+                key={g}
+                type='button'
+                aria-label={g}
+                aria-pressed={glyph === g}
+                onClick={() => setGlyph(g)}
+                className={cn(
+                    'grid aspect-square place-items-center rounded-lg border transition-colors duration-150',
+                    glyph === g ? 'border-foreground/40 bg-muted' : 'border-border hover:bg-muted/60'
+                )}
+                style={{ color: glyph === g ? tint : undefined }}
+            >
+                <Glyph className='size-4' aria-hidden />
+            </button>
+        );
+    };
 
     const submit = async () => {
         setBusy(true);
@@ -112,28 +130,18 @@ export default function CustomizeServer({ server, onClose }: { server: SdkServer
 
                 <div>
                     <span className={label}>Icon</span>
-                    <div className='grid grid-cols-7 gap-1.5 sm:grid-cols-10'>
-                        {GLYPH_NAMES.map((g) => {
-                            const Glyph = GLYPHS[g];
-                            return (
-                                <button
-                                    key={g}
-                                    type='button'
-                                    aria-label={g}
-                                    aria-pressed={glyph === g}
-                                    onClick={() => setGlyph(g)}
-                                    className={cn(
-                                        'grid aspect-square place-items-center rounded-lg border transition',
-                                        glyph === g ? 'border-foreground/40 bg-muted' : 'border-border hover:bg-muted/60'
-                                    )}
-                                    style={{ color: glyph === g ? tint : undefined }}
-                                >
-                                    <Glyph className='size-4' aria-hidden />
-                                </button>
-                            );
-                        })}
+                    <div className='grid grid-cols-5 gap-1.5 sm:grid-cols-10'>
+                        {GLYPH_NAMES.slice(0, 10).map(glyphButton)}
                     </div>
+                    <Collapse open={moreIcons || (glyph !== null && GLYPH_NAMES.indexOf(glyph) >= 10)}>
+                        <div className='grid grid-cols-5 gap-1.5 pt-1.5 sm:grid-cols-10'>
+                            {GLYPH_NAMES.slice(10).map(glyphButton)}
+                        </div>
+                    </Collapse>
                     <div className='mt-2 flex flex-wrap gap-2'>
+                        <Button size='xsmall' color='grey' onClick={() => setMoreIcons(!moreIcons)}>
+                            {moreIcons ? 'Fewer icons' : 'More icons'}
+                        </Button>
                         <Button size='xsmall' color='grey' disabled={busy} onClick={() => file.current?.click()}>
                             <ImageUp className='size-3.5' aria-hidden /> Upload image
                         </Button>
@@ -157,18 +165,24 @@ export default function CustomizeServer({ server, onClose }: { server: SdkServer
                             type='button'
                             onClick={() => setColor('')}
                             aria-pressed={color === ''}
-                            className={cn('h-7 rounded-full border px-3 text-xs font-semibold', color === '' ? 'border-foreground/40 bg-muted' : 'border-border')}
+                            className={cn(
+                                'h-7 rounded-full border px-3 text-xs font-semibold',
+                                color === '' ? 'border-foreground/40 bg-muted' : 'border-border'
+                            )}
                         >
                             Auto
                         </button>
-                        {TINTS.map((t) => (
+                        {TINTS.slice(0, 6).map((t) => (
                             <button
                                 key={t}
                                 type='button'
                                 aria-label={`Colour ${t}`}
                                 aria-pressed={color === t}
                                 onClick={() => setColor(t)}
-                                className={cn('size-7 rounded-full border-2 transition', color === t ? 'scale-110 border-foreground' : 'border-transparent')}
+                                className={cn(
+                                    'size-7 rounded-full border-2 transition',
+                                    color === t ? 'scale-110 border-foreground' : 'border-transparent'
+                                )}
                                 style={{ background: t }}
                             />
                         ))}
@@ -217,7 +231,8 @@ export default function CustomizeServer({ server, onClose }: { server: SdkServer
                     </div>
                 </div>
                 <p className='text-xs text-muted-foreground'>
-                    Saved in this server's <code className='font-mono'>.obsidian.json</code>, so everyone with access sees it.
+                    Saved in this server's <code className='font-mono'>.obsidian.json</code>, so everyone with access
+                    sees it.
                 </p>
             </div>
             <Dialog.Footer>

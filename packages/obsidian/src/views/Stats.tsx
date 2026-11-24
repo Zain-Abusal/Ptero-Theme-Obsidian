@@ -13,7 +13,11 @@ function Bar({ metric }: { metric: ServerStatMetric }) {
             <span
                 className={cn(
                     'block h-full rounded-full transition-[width] duration-500',
-                    metric.alarm === 'danger' ? 'bg-destructive' : metric.alarm === 'warning' ? 'bg-warning' : 'bg-success'
+                    metric.alarm === 'danger'
+                        ? 'bg-destructive'
+                        : metric.alarm === 'warning'
+                          ? 'bg-warning'
+                          : 'bg-success'
                 )}
                 style={{ width: `${Math.max(f * 100, 2)}%` }}
             />
@@ -30,10 +34,11 @@ function Tile({ label, children, className }: { label: string; children: React.R
     );
 }
 
-/** Live values from the server's websocket as a row of tiles. */
 export default function Stats({ model, className }: ViewProps<'server.stats'>) {
     const limit = (metric: ServerStatMetric, format: (n: number) => string) =>
-        metric.limit > 0 ? <span className='text-xs font-medium text-muted-foreground'> / {format(metric.limit)}</span> : null;
+        metric.limit > 0 ? (
+            <span className='text-xs font-medium text-muted-foreground'> / {format(metric.limit)}</span>
+        ) : null;
 
     return (
         <div className={cn('grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6', className)}>
@@ -43,7 +48,9 @@ export default function Stats({ model, className }: ViewProps<'server.stats'>) {
                     {model.state ? stateLabel[model.state] : 'Connecting'}
                 </span>
                 {model.state === 'running' && (
-                    <span className='mt-0.5 block text-xs font-medium text-muted-foreground'>up {uptime(model.uptime)}</span>
+                    <span className='mt-0.5 block text-xs font-medium text-muted-foreground'>
+                        up {uptime(model.uptime)}
+                    </span>
                 )}
             </Tile>
             <Tile label='CPU'>

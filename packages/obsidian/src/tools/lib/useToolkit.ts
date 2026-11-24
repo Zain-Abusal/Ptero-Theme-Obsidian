@@ -4,7 +4,6 @@ import { useCurrentServerRequired } from '@pterodactyl/sdk';
 import { serverApi } from './api';
 import { detect, loadersFor, type Installed } from './minecraft';
 
-/** The current server, its API, and what it runs (detected once a minute at most). */
 export function useToolkit() {
     const server = useCurrentServerRequired();
     const id = server.attributes.identifier;
@@ -29,7 +28,6 @@ export function useToolkit() {
     };
 }
 
-/** A directory listing that screens share and refresh after they change it. */
 export function useDirectory(directory: string) {
     const { id, api } = useToolkit();
 

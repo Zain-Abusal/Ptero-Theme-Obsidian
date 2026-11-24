@@ -7,7 +7,8 @@ import { modrinthDownload, modrinthLoaders } from './lib/sources';
 afterEach(() => vi.unstubAllGlobals());
 
 const zip = (size = 8) => new Uint8Array([0x50, 0x4b, ...new Array(Math.max(0, size - 2)).fill(1)]);
-const ok = (body: BodyInit, headers: Record<string, string> = {}) => Promise.resolve(new Response(body, { status: 200, headers }));
+const ok = (body: BodyInit, headers: Record<string, string> = {}) =>
+    Promise.resolve(new Response(body, { status: 200, headers }));
 
 test('maps a CurseForge project, marking ones that forbid third-party downloads as external', () => {
     const mod: CfMod = {
@@ -43,8 +44,16 @@ test('plans an mrpack: server files only, folders split from names, unsafe paths
         versionId: '1.0',
         dependencies: { minecraft: '1.21.4', 'fabric-loader': '0.16.10' },
         files: [
-            { path: 'mods/lithium.jar', downloads: ['https://cdn.modrinth.com/a.jar'], env: { client: 'required', server: 'required' } },
-            { path: 'mods/sodium.jar', downloads: ['https://cdn.modrinth.com/b.jar'], env: { client: 'required', server: 'unsupported' } },
+            {
+                path: 'mods/lithium.jar',
+                downloads: ['https://cdn.modrinth.com/a.jar'],
+                env: { client: 'required', server: 'required' },
+            },
+            {
+                path: 'mods/sodium.jar',
+                downloads: ['https://cdn.modrinth.com/b.jar'],
+                env: { client: 'required', server: 'unsupported' },
+            },
             { path: 'config/x/y.json', downloads: ['https://cdn.modrinth.com/c.json'] },
             { path: '../evil.jar', downloads: ['https://cdn.modrinth.com/d.jar'] },
             { path: '/etc/passwd', downloads: ['https://cdn.modrinth.com/e'] },
@@ -88,10 +97,14 @@ test('merges overrides into the server root: new entries move, folders merge, fi
 });
 
 test('downloads in the browser only when it can: CORS, size and archive checks fall back to the server', async () => {
-    expect(await fetchAsFile('https://x/a.jar', 'a.jar', 100, () => Promise.reject(new TypeError('Failed to fetch')))).toBeNull();
+    expect(
+        await fetchAsFile('https://x/a.jar', 'a.jar', 100, () => Promise.reject(new TypeError('Failed to fetch')))
+    ).toBeNull();
     expect(await fetchAsFile('https://x/a.jar', 'a.jar', 100, () => ok(zip(), { 'content-length': '500' }))).toBeNull();
     expect(await fetchAsFile('https://x/a.jar', 'a.jar', 100, () => ok('<html>blocked</html>'))).toBeNull();
-    expect(await fetchAsFile('https://x/a.jar', 'a.jar', 100, () => Promise.resolve(new Response('', { status: 404 })))).toBeNull();
+    expect(
+        await fetchAsFile('https://x/a.jar', 'a.jar', 100, () => Promise.resolve(new Response('', { status: 404 })))
+    ).toBeNull();
 
     const file = await fetchAsFile('https://x/a.jar', 'a.jar', 100, () => ok(zip()));
     expect(file?.name).toBe('a.jar');
@@ -102,13 +115,18 @@ test('installs many files: uploads per folder in batches, pulls what the browser
     const uploads: string[] = [];
     const pulls: string[] = [];
     const api = {
-        upload: async (directory: string, files: File[]) => void uploads.push(`${directory}:${files.map((f) => f.name).join(',')}`),
+        upload: async (directory: string, files: File[]) =>
+            void uploads.push(`${directory}:${files.map((f) => f.name).join(',')}`),
         pull: async (url: string) => {
             pulls.push(url);
-            if (url.includes('limited')) throw Object.assign(new Error('Too Many Requests'), { response: { status: 429 } });
+            if (url.includes('limited'))
+                throw Object.assign(new Error('Too Many Requests'), { response: { status: 429 } });
         },
     };
-    const fetcher = ((url: string) => (url.includes('github') || url.includes('limited') ? Promise.reject(new TypeError('cors')) : ok(zip()))) as typeof fetch;
+    const fetcher = ((url: string) =>
+        url.includes('github') || url.includes('limited')
+            ? Promise.reject(new TypeError('cors'))
+            : ok(zip())) as typeof fetch;
     const results: string[] = [];
 
     const summary = await installMany(
@@ -139,8 +157,20 @@ test('picks the primary file and its sha1, falling back from the requested Minec
             loaders: ['minecraft'],
             game_versions: ['1.21.4'],
             files: [
-                { url: 'https://cdn.modrinth.com/extra.zip', filename: 'extra.zip', primary: false, size: 1, hashes: { sha1: 'bad' } },
-                { url: 'https://cdn.modrinth.com/pack.zip', filename: 'Pack v1.zip', primary: true, size: 2, hashes: { sha1: 'abc123' } },
+                {
+                    url: 'https://cdn.modrinth.com/extra.zip',
+                    filename: 'extra.zip',
+                    primary: false,
+                    size: 1,
+                    hashes: { sha1: 'bad' },
+                },
+                {
+                    url: 'https://cdn.modrinth.com/pack.zip',
+                    filename: 'Pack v1.zip',
+                    primary: true,
+                    size: 2,
+                    hashes: { sha1: 'abc123' },
+                },
             ],
         },
     ];
@@ -149,7 +179,12 @@ test('picks the primary file and its sha1, falling back from the requested Minec
 
     const file = await modrinthDownload('fresh-animations', modrinthLoaders('resourcepack', ['paper']), '1.99');
 
-    expect(file).toMatchObject({ url: 'https://cdn.modrinth.com/pack.zip', filename: 'Pack-v1.zip', sha1: 'abc123', exact: false });
+    expect(file).toMatchObject({
+        url: 'https://cdn.modrinth.com/pack.zip',
+        filename: 'Pack-v1.zip',
+        sha1: 'abc123',
+        exact: false,
+    });
     expect(String(fetchMock.mock.calls[0][0])).toContain(encodeURIComponent('["minecraft"]'));
     expect(modrinthLoaders('datapack', ['paper'])).toEqual(['datapack']);
     expect(modrinthLoaders('modpack', ['paper'])).toEqual([]);

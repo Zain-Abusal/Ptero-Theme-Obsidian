@@ -1,4 +1,3 @@
-/** The values of Obsidian's settings, as `useThemeSettings<ThemeSettings>()` returns them (mirrors extension.json). */
 export interface ThemeSettings {
     readonly logo: string | null;
     readonly brandName: string;

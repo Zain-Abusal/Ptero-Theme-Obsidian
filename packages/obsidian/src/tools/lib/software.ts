@@ -21,18 +21,17 @@ export interface Provider {
     resolve(version: string): Promise<Download>;
 }
 
-/** "26.3" stays "26"; "1.21.4" becomes "1.21". */
-const familyOf = (version: string) => (version.startsWith('1.') ? version.split('.').slice(0, 2).join('.') : version.split('.')[0]);
+const familyOf = (version: string) =>
+    version.startsWith('1.') ? version.split('.').slice(0, 2).join('.') : version.split('.')[0];
 
-/** Newest first, grouped by family, pre-releases left out. */
 function group(versions: string[], keepUnstable = false): VersionFamily[] {
     const stable = keepUnstable ? versions : versions.filter((v) => !/(pre|rc|snapshot|-)/i.test(v));
     const families = new Map<string, string[]>();
-    for (const version of stable) families.set(familyOf(version), [...(families.get(familyOf(version)) ?? []), version]);
+    for (const version of stable)
+        families.set(familyOf(version), [...(families.get(familyOf(version)) ?? []), version]);
     return [...families.entries()].map(([name, list]) => ({ name, versions: list }));
 }
 
-/** PaperMC's Fill API serves Paper, Folia and Velocity. */
 function fill(id: 'paper' | 'folia' | 'velocity', label: string, blurb: string, kind: Provider['kind']): Provider {
     const api = `https://fill.papermc.io/v3/projects/${id}`;
 
@@ -104,7 +103,9 @@ export const providers: Provider[] = [
         blurb: 'Lightweight loader for mods.',
         kind: 'server',
         async versions() {
-            const data = await getJson<{ version: string; stable: boolean }[]>('https://meta.fabricmc.net/v2/versions/game');
+            const data = await getJson<{ version: string; stable: boolean }[]>(
+                'https://meta.fabricmc.net/v2/versions/game'
+            );
             return group(data.filter((v) => v.stable).map((v) => v.version));
         },
         resolve: (version) => fabricServerJar(version),
@@ -114,10 +115,11 @@ export const providers: Provider[] = [
 
 export const providerById = (id: string) => providers.find((p) => p.id === id);
 
-/** A Fabric server launcher jar for a Minecraft version, on a given loader version or the newest stable one. */
 export async function fabricServerJar(minecraft: string, loaderVersion?: string): Promise<Download> {
     const [loaders, installers] = await Promise.all([
-        loaderVersion ? Promise.resolve([{ version: loaderVersion, stable: true }]) : getJson<{ version: string; stable: boolean }[]>('https://meta.fabricmc.net/v2/versions/loader'),
+        loaderVersion
+            ? Promise.resolve([{ version: loaderVersion, stable: true }])
+            : getJson<{ version: string; stable: boolean }[]>('https://meta.fabricmc.net/v2/versions/loader'),
         getJson<{ version: string; stable: boolean }[]>('https://meta.fabricmc.net/v2/versions/installer'),
     ]);
     const loader = loaders.find((l) => l.stable) ?? loaders[0];
@@ -130,8 +132,11 @@ export async function fabricServerJar(minecraft: string, loaderVersion?: string)
     };
 }
 
-/** The SERVER_JARFILE startup variable, which the egg's startup command runs. */
-export function jarOf(startup: { data: { attributes: { env_variable: string; server_value: string | null; default_value: string } }[] } | undefined): string {
+export function jarOf(
+    startup:
+        | { data: { attributes: { env_variable: string; server_value: string | null; default_value: string } }[] }
+        | undefined
+): string {
     const variable = startup?.data.find((v) => v.attributes.env_variable === 'SERVER_JARFILE')?.attributes;
     return variable?.server_value || variable?.default_value || 'server.jar';
 }

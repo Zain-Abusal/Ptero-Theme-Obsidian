@@ -5,7 +5,6 @@ import { useNavigation, type AppSearchModel, type ViewProps } from '@pterodactyl
 const row =
     'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted focus-visible:bg-muted focus-visible:outline-none';
 
-/** Account pages that match the term, so Quickcast also jumps around the panel, not only to servers. */
 function Pages({ model }: { model: AppSearchModel }) {
     const { items } = useNavigation('account');
     const term = model.field.fieldProps.value.trim().toLowerCase();
@@ -18,7 +17,9 @@ function Pages({ model }: { model: AppSearchModel }) {
             <p className='obs-eyebrow px-3 pt-3 pb-1.5 text-[0.6rem]'>Pages</p>
             {matches.map((item) => (
                 <PanelLink key={item.id} destination={item.destination} onClick={model.close} className={row}>
-                    {item.icon && <NamedIcon name={item.icon} size={16} className='text-muted-foreground' aria-hidden />}
+                    {item.icon && (
+                        <NamedIcon name={item.icon} size={16} className='text-muted-foreground' aria-hidden />
+                    )}
                     <span className='flex-1'>{item.label}</span>
                 </PanelLink>
             ))}
@@ -61,7 +62,6 @@ function Servers({ model }: { model: AppSearchModel }) {
     );
 }
 
-/** Quickcast: the panel's own search, as a pill in the top bar and a command palette. */
 export default function Search({ model, className }: ViewProps<'app.search'>) {
     const { fieldProps } = model.field;
 
@@ -83,7 +83,9 @@ export default function Search({ model, className }: ViewProps<'app.search'>) {
                                 />
                             </label>
                         </InputSpinner>
-                        {model.field.error && <p className='mt-2 px-1 text-xs text-muted-foreground'>{model.field.error}</p>}
+                        {model.field.error && (
+                            <p className='mt-2 px-1 text-xs text-muted-foreground'>{model.field.error}</p>
+                        )}
                         <div className='mt-2 max-h-[55vh] overflow-y-auto'>
                             <Servers model={model} />
                             <Pages model={model} />

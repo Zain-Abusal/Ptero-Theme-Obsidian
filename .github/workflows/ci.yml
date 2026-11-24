@@ -24,6 +24,9 @@ jobs:
         with:
           panel-ref: ${{ env.PANEL_REF }}
 
+      - name: Style (no comments, no em dashes, formatted)
+        run: npm run style
+
       - name: Typecheck
         run: npm run typecheck
 

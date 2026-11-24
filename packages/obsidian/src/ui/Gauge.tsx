@@ -1,9 +1,5 @@
 import { cn } from '@pterodactyl/sdk/theme';
 
-/**
- * A ring gauge: a track and an arc for `value` (0 to 1, or null for unlimited). The arc turns
- * warning and danger at the panel's alarm thresholds.
- */
 export default function Gauge({
     value,
     label,

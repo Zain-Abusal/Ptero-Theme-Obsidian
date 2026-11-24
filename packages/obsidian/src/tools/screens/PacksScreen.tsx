@@ -13,7 +13,6 @@ import { Browser } from './BrowserScreen';
 
 type Tab = 'modpack' | 'datapack' | 'resourcepack';
 
-/** The world folder, from server.properties' level-name. */
 function useLevelName() {
     const { id, api } = useToolkit();
     return useQuery({
@@ -29,11 +28,11 @@ function useLevelName() {
 
 function useRunning(uuid: string) {
     const { data } = useServerResources(uuid, (r) => r);
-    const state = (data as unknown as { attributes?: { current_state?: string } } | undefined)?.attributes?.current_state;
+    const state = (data as unknown as { attributes?: { current_state?: string } } | undefined)?.attributes
+        ?.current_state;
     return state === 'running' || state === 'starting' || state === 'stopping';
 }
 
-/** Confirms, then installs a modpack with a live log. */
 function PackDialog({ project, source, onClose }: { project: Project; source: Source; onClose: () => void }) {
     const { api, id, server, gameVersion, refresh } = useToolkit();
     const { curseforgeKey } = useObsidian();
@@ -55,10 +54,12 @@ function PackDialog({ project, source, onClose }: { project: Project; source: So
             onFile: () => setDone((n) => n + 1),
         };
         try {
-            if (source === 'curseforge') await installCurseForgePack(ctx, curseforgeKey, project.id, project.page, null);
+            if (source === 'curseforge')
+                await installCurseForgePack(ctx, curseforgeKey, project.id, project.page, null);
             else {
                 const summary = await installModrinthPack(ctx, project.id, gameVersion);
-                if (summary.failed.length) throw new Error(`${summary.failed.length} files could not be downloaded; see the log.`);
+                if (summary.failed.length)
+                    throw new Error(`${summary.failed.length} files could not be downloaded; see the log.`);
             }
             setState('done');
             toast.success(`${project.title} is installed. Start the server to play it.`);
@@ -77,7 +78,8 @@ function PackDialog({ project, source, onClose }: { project: Project; source: So
             {state === 'idle' && (
                 <div className='flex flex-col gap-3 text-sm'>
                     <p className='text-muted-foreground'>
-                        This downloads the pack’s mods and configs into the server and replaces files with the same names. Worlds are not touched.
+                        This downloads the pack’s mods and configs into the server and replaces files with the same
+                        names. Worlds are not touched.
                     </p>
                     {running && (
                         <p className='flex gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning'>
@@ -85,7 +87,9 @@ function PackDialog({ project, source, onClose }: { project: Project; source: So
                             Stop the server first. Replacing mods while it runs can corrupt worlds.
                         </p>
                     )}
-                    <p className='text-xs text-muted-foreground'>Take a backup first if the server already has mods you want to keep.</p>
+                    <p className='text-xs text-muted-foreground'>
+                        Take a backup first if the server already has mods you want to keep.
+                    </p>
                 </div>
             )}
             {state !== 'idle' && (
@@ -122,7 +126,6 @@ function PackDialog({ project, source, onClose }: { project: Project; source: So
     );
 }
 
-/** Modpacks, datapacks and resource packs from Modrinth (and CurseForge for modpacks). */
 export default function PacksScreen() {
     const { api, id, gameVersion } = useToolkit();
     const client = useQueryClient();
@@ -136,7 +139,11 @@ export default function PacksScreen() {
         const props = parseProperties(raw);
         await api.write(
             '/server.properties',
-            serializeProperties(props, { ...props.values, 'resource-pack': file.url, 'resource-pack-sha1': file.sha1 ?? '' })
+            serializeProperties(props, {
+                ...props.values,
+                'resource-pack': file.url,
+                'resource-pack-sha1': file.sha1 ?? '',
+            })
         );
         await client.invalidateQueries({ queryKey: ['obsidian-mc', id, 'properties'] });
         toast.success(`${project.title} is now the server resource pack. Restart to apply.`);
@@ -158,8 +165,8 @@ export default function PacksScreen() {
             {tab === 'modpack' && (
                 <>
                     <Alert type='info'>
-                        Fabric packs are installed completely, loader included. Forge, NeoForge and Quilt packs get their mods and configs; install
-                        the loader with a matching egg.
+                        Fabric packs are installed completely, loader included. Forge, NeoForge and Quilt packs get
+                        their mods and configs; install the loader with a matching egg.
                     </Alert>
                     <Browser
                         key='modpack'
@@ -168,13 +175,20 @@ export default function PacksScreen() {
                     />
                 </>
             )}
-            {tab === 'datapack' && level.data && <Browser key='datapack' kind='datapack' directory={`/${level.data}/datapacks`} />}
+            {tab === 'datapack' && level.data && (
+                <Browser key='datapack' kind='datapack' directory={`/${level.data}/datapacks`} />
+            )}
             {tab === 'resourcepack' && (
                 <>
                     <p className='text-sm text-muted-foreground'>
-                        A server resource pack is offered to every player who joins. The server links to Modrinth’s copy, with its checksum.
+                        A server resource pack is offered to every player who joins. The server links to Modrinth’s
+                        copy, with its checksum.
                     </p>
-                    <Browser key='resourcepack' kind='resourcepack' action={{ label: 'Use as server pack', run: setServerPack }} />
+                    <Browser
+                        key='resourcepack'
+                        kind='resourcepack'
+                        action={{ label: 'Use as server pack', run: setServerPack }}
+                    />
                 </>
             )}
             {pack && <PackDialog project={pack.project} source={pack.source} onClose={() => setPack(null)} />}

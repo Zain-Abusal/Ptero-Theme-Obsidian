@@ -1,4 +1,3 @@
-/** A problem the doctor found in a log or crash report. */
 export interface Finding {
     readonly id: string;
     readonly severity: 'critical' | 'warning' | 'info';
@@ -6,11 +5,10 @@ export interface Finding {
     readonly cause: string;
     readonly fixes: readonly string[];
     readonly lines: readonly string[];
-    /** A toolkit page that fixes it, such as "versions". */
+
     readonly page?: string;
 }
 
-/** Class file major version → the Java release that reads it. */
 export const CLASS_TO_JAVA: Readonly<Record<number, number>> = {
     52: 8,
     53: 9,
@@ -203,19 +201,16 @@ const RULES: readonly Rule[] = [
     },
 ];
 
-/** A few lines of context around a match. */
 function around(lines: string[], index: number, before = 1, after = 3): string[] {
     return lines.slice(Math.max(0, index - before), Math.min(lines.length, index + after + 1));
 }
 
-/** Runs every rule over the text and returns one finding per rule, critical first. */
 export function diagnose(text: string): Finding[] {
     const lines = text.replace(/\r\n/g, '\n').split('\n');
     const findings: Finding[] = [];
 
     for (const rule of RULES) {
         for (let i = 0; i < lines.length; i++) {
-            // Some messages continue on the next line, so each test sees two lines.
             const window = `${lines[i]}\n${lines[i + 1] ?? ''}`;
             const match = window.match(rule.test);
             if (!match) continue;
@@ -228,10 +223,8 @@ export function diagnose(text: string): Finding[] {
     return findings.sort((a, b) => rank[a.severity] - rank[b.severity]);
 }
 
-/** The last `count` lines of a log. */
 export const tail = (text: string, count: number) => text.replace(/\r\n/g, '\n').split('\n').slice(-count).join('\n');
 
-/** Uploads a log to mclo.gs and returns its public URL. The log leaves the panel. */
 export async function shareLog(content: string): Promise<string> {
     const response = await fetch('https://api.mclo.gs/1/log', {
         method: 'POST',
@@ -247,7 +240,6 @@ export interface Analysis {
     readonly information: { label: string; value: string }[];
 }
 
-/** mclo.gs's own analysis of a log. The log leaves the panel. */
 export async function analyseLog(content: string): Promise<Analysis> {
     const response = await fetch('https://api.mclo.gs/1/analyse', {
         method: 'POST',

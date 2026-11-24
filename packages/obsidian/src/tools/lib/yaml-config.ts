@@ -2,7 +2,6 @@ import { Document, isMap, isScalar, isSeq, parseDocument, type Node } from 'yaml
 
 export type Value = string | number | boolean | null;
 
-/** One editable leaf of a YAML file: a scalar at a path, with its comment. */
 export interface Leaf {
     readonly path: (string | number)[];
     readonly key: string;
@@ -11,10 +10,8 @@ export interface Leaf {
     readonly comment: string;
 }
 
-/** Parses YAML keeping comments and formatting, so saving changes only edited values. */
 export const parseYaml = (text: string): Document => parseDocument(text, { keepSourceTokens: true });
 
-/** Every scalar in maps, depth first. Lists are left as text in the file editor. */
 export function leaves(doc: Document): Leaf[] {
     const out: Leaf[] = [];
     const walk = (node: Node | null | undefined, path: (string | number)[]) => {
@@ -35,7 +32,6 @@ export function leaves(doc: Document): Leaf[] {
                     comment: (pair.value.comment || (isScalar(pair.key) ? pair.key.commentBefore : '') || '').trim(),
                 });
             } else if (isSeq(pair.value)) {
-                // Lists are edited in the panel's file editor.
             }
         }
     };
@@ -45,7 +41,6 @@ export function leaves(doc: Document): Leaf[] {
 
 export const pathKey = (path: readonly (string | number)[]) => path.join('\u0000');
 
-/** Writes changed values into a copy of the document and returns the text. Comments stay. */
 export function applyChanges(
     text: string,
     changes: ReadonlyMap<string, { path: (string | number)[]; value: Value }>
@@ -55,7 +50,6 @@ export function applyChanges(
     return doc.toString({ lineWidth: 0 });
 }
 
-/** Reads a number typed in a field, keeping the original type when it was a number. */
 export function coerce(original: Value, typed: string): Value {
     if (typeof original === 'number') {
         const n = Number(typed);

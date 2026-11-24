@@ -15,11 +15,10 @@ import {
 } from '../lib/properties';
 import { useToolkit } from '../lib/useToolkit';
 import Page, { Eyebrow, attempt } from '../ui/Page';
+import Collapse from '../../ui/Collapse';
 
 const FILE = '/server.properties';
 
-/** Other config files, opened in the panel's own editor. */
-/** The YAML editor (and the yaml library) loads only when one of these tabs opens. */
 const YamlEditor = lazy(() => import('../lib/yaml-editor'));
 
 const CONFIGS = [
@@ -85,7 +84,6 @@ function Control({ field, value, onChange }: { field: Field; value: string; onCh
     );
 }
 
-/** A big tile for a common setting, like the screenshot's PLAYER SLOTS or WHITELIST. */
 function Tile({ field, value, onChange }: { field: Field; value: string; onChange: (value: string) => void }) {
     const { kind } = field;
     return (
@@ -101,7 +99,7 @@ function Tile({ field, value, onChange }: { field: Field; value: string; onChang
             ) : kind.type === 'number' ? (
                 <>
                     <span className='text-2xl font-bold tabular-nums'>
-                        {value || '—'} <span className='text-xs font-medium text-muted-foreground'>{kind.unit}</span>
+                        {value || '-'} <span className='text-xs font-medium text-muted-foreground'>{kind.unit}</span>
                     </span>
                     <input
                         type='range'
@@ -120,7 +118,6 @@ function Tile({ field, value, onChange }: { field: Field; value: string; onChang
     );
 }
 
-/** The MOTD as the server list shows it, with colour codes, and a palette that inserts them. */
 function Motd({
     value,
     onChange,
@@ -205,7 +202,6 @@ function Motd({
     );
 }
 
-/** Every server setting in plain words, with search, a changes-only view and undo. */
 export default function PropertiesScreen() {
     const { id, api } = useToolkit();
     const client = useQueryClient();
@@ -236,7 +232,6 @@ export default function PropertiesScreen() {
         );
     };
 
-    // Keys in the file that the schema does not describe, shown under Advanced.
     const advanced = useMemo(
         () =>
             Object.keys(values)
@@ -397,7 +392,7 @@ export default function PropertiesScreen() {
                                             aria-hidden
                                         />
                                     </button>
-                                    {expanded && (
+                                    <Collapse open={expanded}>
                                         <ul className='divide-y divide-border border-t border-border'>
                                             {shown.map((field) => (
                                                 <li
@@ -429,7 +424,7 @@ export default function PropertiesScreen() {
                                                 </li>
                                             ))}
                                         </ul>
-                                    )}
+                                    </Collapse>
                                 </section>
                             );
                         })}

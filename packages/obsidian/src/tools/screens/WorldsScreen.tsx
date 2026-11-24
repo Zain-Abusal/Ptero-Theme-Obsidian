@@ -41,7 +41,6 @@ function useRunning(uuid: string) {
     return state !== undefined && state !== 'offline' && state !== 'stopped';
 }
 
-/** Chunky pre-generation for one world, through console commands. */
 function Pregenerate({ world, running }: { world: string; running: boolean }) {
     const { api, id } = useToolkit();
     const plugins = useDirectory('/plugins');
@@ -122,7 +121,6 @@ function Pregenerate({ world, running }: { world: string; running: boolean }) {
     );
 }
 
-/** The worlds on the server: which one loads, downloads and backups, resets, and pre-generation. */
 export default function WorldsScreen() {
     const { server, id, api } = useToolkit();
     const client = useQueryClient();

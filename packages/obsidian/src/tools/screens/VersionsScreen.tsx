@@ -29,7 +29,8 @@ const icons: Record<Provider['id'], typeof Box> = {
 
 function useRunState(uuid: string) {
     const { data } = useServerResources(uuid, (r) => r);
-    const state = (data as unknown as { attributes?: { current_state?: string } } | undefined)?.attributes?.current_state;
+    const state = (data as unknown as { attributes?: { current_state?: string } } | undefined)?.attributes
+        ?.current_state;
     return state === 'running' || state === 'starting' || state === 'stopping' ? state : 'offline';
 }
 
@@ -65,7 +66,6 @@ function Current({ installed, jar, running }: { installed: Installed | undefined
     );
 }
 
-/** Lets the user pick one of the egg's Docker images, which is how Pterodactyl switches Java. */
 function JavaRuntime({ startup, image }: { startup: SdkServerStartup | undefined; image: string }) {
     const { api } = useToolkit();
     const allowed = useServerPermission('startup.docker-image');
@@ -88,7 +88,11 @@ function JavaRuntime({ startup, image }: { startup: SdkServerStartup | undefined
                             title={label}
                             onClick={async () => {
                                 setBusy(value);
-                                await attempt(() => api.setDockerImage(value), `Switched to ${label}. Restart to apply.`, toast);
+                                await attempt(
+                                    () => api.setDockerImage(value),
+                                    `Switched to ${label}. Restart to apply.`,
+                                    toast
+                                );
                                 setBusy(null);
                             }}
                             className={cn(
@@ -98,18 +102,23 @@ function JavaRuntime({ startup, image }: { startup: SdkServerStartup | undefined
                                     : 'border-border bg-muted/40 hover:bg-muted'
                             )}
                         >
-                            <span className='block text-lg font-bold'>{busy === value ? <Spinner size='small' /> : short}</span>
-                            <span className='block truncate text-[0.65rem] opacity-75'>{short === label ? 'image' : 'Java'}</span>
+                            <span className='block text-lg font-bold'>
+                                {busy === value ? <Spinner size='small' /> : short}
+                            </span>
+                            <span className='block truncate text-[0.65rem] opacity-75'>
+                                {short === label ? 'image' : 'Java'}
+                            </span>
                         </button>
                     );
                 })}
             </div>
-            <p className='mt-3 text-xs text-muted-foreground'>Newer Minecraft needs newer Java. Restart after switching.</p>
+            <p className='mt-3 text-xs text-muted-foreground'>
+                Newer Minecraft needs newer Java. Restart after switching.
+            </p>
         </Panel>
     );
 }
 
-/** Switch server software and Minecraft version: Wings downloads the jar straight onto the server. */
 export default function VersionsScreen() {
     const { server, id, api, installed, refresh } = useToolkit();
     const { data: startup } = useServerStartup(id);
@@ -123,7 +132,6 @@ export default function VersionsScreen() {
     const [step, setStep] = useState<string | null>(null);
     const provider = providerById(software)!;
 
-    // Start on what the server already runs.
     useEffect(() => {
         if (installed && providerById(installed.software)) setSoftware(installed.software as Provider['id']);
     }, [installed]);
@@ -157,10 +165,15 @@ export default function VersionsScreen() {
             await api.install(download.url, '/', jar, { maxMb: server.attributes.upload_size });
             if (eula) await api.write('/eula.txt', 'eula=true\n');
             const marker: Installed = { software, version, build: download.build };
-            await api.write(`/${MARKER}`, JSON.stringify({ ...marker, installedAt: new Date().toISOString() }, null, 2));
-            // Keep the egg's own variable in step, so a reinstall picks the same version.
+            await api.write(
+                `/${MARKER}`,
+                JSON.stringify({ ...marker, installedAt: new Date().toISOString() }, null, 2)
+            );
+
             await api.setVariable('MINECRAFT_VERSION', version).catch(() => undefined);
-            toast.success(`${provider.label} ${version} installed. ${running === 'offline' ? 'Start' : 'Restart'} the server to use it.`);
+            toast.success(
+                `${provider.label} ${version} installed. ${running === 'offline' ? 'Start' : 'Restart'} the server to use it.`
+            );
             void refresh();
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'The install failed.');
@@ -220,8 +233,13 @@ export default function VersionsScreen() {
                             )}
                             <div className='flex flex-col gap-3'>
                                 {shown.map((family) => (
-                                    <div key={family.name} className='grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-3'>
-                                        <span className='pt-1.5 font-mono text-xs text-muted-foreground'>{family.name}</span>
+                                    <div
+                                        key={family.name}
+                                        className='grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-3'
+                                    >
+                                        <span className='pt-1.5 font-mono text-xs text-muted-foreground'>
+                                            {family.name}
+                                        </span>
                                         <div className='flex flex-wrap gap-1.5'>
                                             {family.versions.map((v) => (
                                                 <button
@@ -265,7 +283,9 @@ export default function VersionsScreen() {
                     <Panel title='Install plan'>
                         <div className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2'>
                             <div className='rounded-lg border border-border bg-muted/40 p-3 text-center'>
-                                <p className='truncate text-sm font-bold'>{installed ? softwareLabel[installed.software] : '…'}</p>
+                                <p className='truncate text-sm font-bold'>
+                                    {installed ? softwareLabel[installed.software] : '…'}
+                                </p>
                                 <p className='font-mono text-xs text-muted-foreground'>{installed?.version ?? '?'}</p>
                             </div>
                             <ArrowRight className='size-4 text-muted-foreground' aria-hidden />

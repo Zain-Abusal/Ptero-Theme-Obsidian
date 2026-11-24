@@ -6,7 +6,6 @@ export interface PlayerCount {
     readonly max: number;
 }
 
-/** Private, loopback and link-local hosts that a public lookup service could never reach. */
 export function isPublicAddress(address: string | null | undefined): address is string {
     if (!address) return false;
     const host = address.replace(/:\d+$/, '').toLowerCase();
@@ -23,11 +22,6 @@ export function isPublicAddress(address: string | null | undefined): address is 
     return true;
 }
 
-/**
- * Players online on a server, from the public mcsrvstat.us lookup of its public address. Refreshed every
- * minute while the page is visible; off when the "Live player counts" setting is off or the server is
- * not running. Only the address leaves the panel.
- */
 export function usePlayerCount(address: string | null | undefined, running: boolean): PlayerCount | null {
     const { livePlayers } = useObsidian();
     const enabled = livePlayers && running && isPublicAddress(address);
@@ -37,7 +31,9 @@ export function usePlayerCount(address: string | null | undefined, running: bool
             const response = await fetch(`https://api.mcsrvstat.us/3/${encodeURIComponent(address!)}`);
             if (!response.ok) return null;
             const body = (await response.json()) as { online?: boolean; players?: { online?: number; max?: number } };
-            return body.online && body.players ? { online: body.players.online ?? 0, max: body.players.max ?? 0 } : null;
+            return body.online && body.players
+                ? { online: body.players.online ?? 0, max: body.players.max ?? 0 }
+                : null;
         },
         enabled,
         staleTime: 60_000,
@@ -49,7 +45,6 @@ export function usePlayerCount(address: string | null | undefined, running: bool
     return enabled ? (data ?? null) : null;
 }
 
-/** Players across running servers, sharing each row's cached lookup. Null when the setting is off. */
 export function usePlayerTotal(servers: readonly { address: string | null; running: boolean }[]): PlayerCount | null {
     const { livePlayers } = useObsidian();
     const targets = servers.filter((s) => s.running && isPublicAddress(s.address));
@@ -59,8 +54,13 @@ export function usePlayerTotal(servers: readonly { address: string | null; runni
             queryFn: async (): Promise<PlayerCount | null> => {
                 const response = await fetch(`https://api.mcsrvstat.us/3/${encodeURIComponent(s.address!)}`);
                 if (!response.ok) return null;
-                const body = (await response.json()) as { online?: boolean; players?: { online?: number; max?: number } };
-                return body.online && body.players ? { online: body.players.online ?? 0, max: body.players.max ?? 0 } : null;
+                const body = (await response.json()) as {
+                    online?: boolean;
+                    players?: { online?: number; max?: number };
+                };
+                return body.online && body.players
+                    ? { online: body.players.online ?? 0, max: body.players.max ?? 0 }
+                    : null;
             },
             enabled: livePlayers,
             staleTime: 60_000,

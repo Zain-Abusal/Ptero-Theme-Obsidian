@@ -18,6 +18,7 @@ import { useObsidian } from '../lib/settings';
 import { usePins, useStored } from '../lib/storage';
 import { useServersMeta } from '../lib/serverMeta';
 import { usePlayerTotal } from '../lib/players';
+import Collapse from '../ui/Collapse';
 
 type Filter = 'all' | 'pinned' | 'running' | 'offline';
 
@@ -25,9 +26,11 @@ const power = (item: ServerListItem) => (item.state.kind === 'ready' ? item.stat
 
 function Total({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div className='obs-surface px-5 py-4'>
+        <div className='obs-surface min-w-0 px-4 py-3.5 sm:px-5 sm:py-4'>
             <p className='obs-eyebrow'>{label}</p>
-            <div className='obs-num mt-1.5 flex items-baseline gap-1 text-3xl font-bold tracking-tight'>{children}</div>
+            <div className='obs-num mt-1.5 flex flex-wrap items-baseline gap-x-1 text-2xl font-bold tracking-tight whitespace-nowrap sm:text-3xl'>
+                {children}
+            </div>
         </div>
     );
 }
@@ -52,7 +55,9 @@ function Totals({ servers, total }: { servers: readonly ServerListItem[]; total:
             {players ? (
                 <Total label='Players now'>
                     {players.online}
-                    {players.max > 0 && <span className='text-sm font-medium text-muted-foreground'>/{players.max}</span>}
+                    {players.max > 0 && (
+                        <span className='text-sm font-medium text-muted-foreground'>/{players.max}</span>
+                    )}
                 </Total>
             ) : (
                 <Total label='CPU now'>
@@ -79,17 +84,17 @@ function Greeting({ servers }: { servers: readonly ServerListItem[] }) {
     return (
         <div className='mb-6'>
             <h1 className='font-header text-[2rem] leading-tight font-bold tracking-tight sm:text-[2.4rem]'>
-                Good{' '}
-                <span className='font-serif text-[1.08em] font-normal italic'>{part}</span>, {user.username}
+                Good {part}, {user.username}
             </h1>
             <p className='mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground'>
                 {servers.length === 0
                     ? 'No servers yet.'
                     : `${up} of ${servers.length} server${servers.length === 1 ? ' is' : 's are'} up.`}
-                {switcherKey.trim() && (
+                {switcherKey.trim() && !window.matchMedia?.('(pointer: coarse)').matches && (
                     <>
                         {' '}
-                        Press <kbd className='obs-kbd'>{switcherKey.trim().toUpperCase()}</kbd> anywhere to switch servers.
+                        Press <kbd className='obs-kbd'>{switcherKey.trim().toUpperCase()}</kbd> anywhere to switch
+                        servers.
                     </>
                 )}
             </p>
@@ -97,7 +102,6 @@ function Greeting({ servers }: { servers: readonly ServerListItem[] }) {
     );
 }
 
-/** The dashboard: a greeting, totals, filters and one row per server. */
 export default function ServerList({ model, className }: ViewProps<'dashboard.serverList'>) {
     const settings = useObsidian();
     const { isPinned } = usePins();
@@ -123,7 +127,6 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
         });
     }, [model.servers, filter, term, isPinned]);
 
-    // Pinned servers first, the panel's order otherwise.
     const sorted = [...shown].sort((a, b) => Number(isPinned(b.uuid)) - Number(isPinned(a.uuid)));
     const meta = useServersMeta(model.servers.map((s) => s.identifier));
     const [collapsed, setCollapsed] = useStored<string[]>('dashboard-groups', []);
@@ -133,7 +136,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
             const group = meta[item.identifier]?.group?.trim() || '';
             named.set(group, [...(named.get(group) ?? []), item]);
         }
-        // Named groups alphabetically, then servers without a group.
+
         return [...named.entries()].sort(([a], [b]) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b)));
     }, [sorted, meta]);
     const grouped = sections.length > 1 || (sections[0] && sections[0][0] !== '');
@@ -144,7 +147,11 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
             {settings.dashboardStats && <Totals servers={model.servers} total={model.totals.servers} />}
             <Slot name='dashboard.before' />
             <div className='flex flex-wrap items-center gap-3'>
-                <div role='tablist' aria-label='Filter servers' className='flex rounded-full border border-border bg-card p-1'>
+                <div
+                    role='tablist'
+                    aria-label='Filter servers'
+                    className='flex rounded-full border border-border bg-card p-1'
+                >
                     {(['all', 'pinned', 'running', 'offline'] as const).map((f) => (
                         <button
                             key={f}
@@ -206,15 +213,22 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                             <button
                                 type='button'
                                 aria-expanded={!closed}
-                                onClick={() => setCollapsed(closed ? collapsed.filter((g) => g !== group) : [...collapsed, group])}
+                                onClick={() =>
+                                    setCollapsed(closed ? collapsed.filter((g) => g !== group) : [...collapsed, group])
+                                }
                                 className='obs-eyebrow group mt-1 flex items-center gap-2 self-start rounded-md py-1 hover:text-foreground'
                             >
-                                <ChevronDown className={cn('size-3.5 transition', closed && '-rotate-90')} aria-hidden />
+                                <ChevronDown
+                                    className={cn('size-3.5 transition', closed && '-rotate-90')}
+                                    aria-hidden
+                                />
                                 {group || 'Ungrouped'}
-                                <span className='rounded-full bg-muted px-1.5 py-0.5 text-[0.6rem] tracking-normal'>{items.length}</span>
+                                <span className='rounded-full bg-muted px-1.5 py-0.5 text-[0.6rem] tracking-normal'>
+                                    {items.length}
+                                </span>
                             </button>
                         )}
-                        {!closed && (
+                        <Collapse open={!closed}>
                             <ul className='obs-stagger flex flex-col gap-2.5'>
                                 {items.map((item, i) => (
                                     <li key={item.uuid} className='min-w-0' style={{ '--i': i } as React.CSSProperties}>
@@ -224,12 +238,15 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                                     </li>
                                 ))}
                             </ul>
-                        )}
+                        </Collapse>
                     </section>
                 );
             })}
             {model.pagination && model.pagination.totalPages > 1 && (
-                <nav aria-label='Pages' className='flex items-center justify-center gap-3 text-sm text-muted-foreground'>
+                <nav
+                    aria-label='Pages'
+                    className='flex items-center justify-center gap-3 text-sm text-muted-foreground'
+                >
                     <Button
                         size='xsmall'
                         color='grey'

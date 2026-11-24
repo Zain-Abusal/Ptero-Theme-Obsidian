@@ -24,19 +24,19 @@ interface Listed {
     readonly note?: string;
 }
 
-/** Minecraft's colour codes and ANSI escapes, which console lines carry. */
 const plain = (line: string) => line.replace(/\x1b\[[0-9;]*m/g, '').replace(/§./g, '');
 
-/**
- * Reads the answer to `list`: "There are 2 of a max of 20 players online: Alex, Steve", or the older
- * "There are 2/20 players online:" with the names on the next line.
- */
 export function parseList(line: string): { online: number; max: number; names: string[] | null } | null {
     const text = plain(line);
     const match = /There are (\d+)(?: of a max of |\/)(\d+) players online:?\s*(.*)$/i.exec(text);
     if (!match) return null;
     const rest = match[3].trim();
-    const names = rest ? rest.split(/,\s*/).map((n) => n.replace(/^\[[^\]]*\]\s*/, '').trim()).filter(Boolean) : null;
+    const names = rest
+        ? rest
+              .split(/,\s*/)
+              .map((n) => n.replace(/^\[[^\]]*\]\s*/, '').trim())
+              .filter(Boolean)
+        : null;
     return { online: Number(match[1]), max: Number(match[2]), names: names ?? (Number(match[1]) === 0 ? [] : null) };
 }
 
@@ -58,7 +58,6 @@ function useJsonList(file: string, map: (entry: Record<string, unknown>) => List
     });
 }
 
-/** Online players, the whitelist, operators, bans and everyone who has joined, with the commands for each. */
 export default function PlayersScreen() {
     const { id, api } = useToolkit();
     const client = useQueryClient();
@@ -70,13 +69,19 @@ export default function PlayersScreen() {
 
     const whitelist = useJsonList('/whitelist.json', (e) => ({ name: String(e.name) }));
     const ops = useJsonList('/ops.json', (e) => ({ name: String(e.name), note: `Level ${String(e.level ?? 4)}` }));
-    const banned = useJsonList('/banned-players.json', (e) => ({ name: String(e.name), note: e.reason ? String(e.reason) : undefined }));
+    const banned = useJsonList('/banned-players.json', (e) => ({
+        name: String(e.name),
+        note: e.reason ? String(e.reason) : undefined,
+    }));
     const known = useJsonList('/usercache.json', (e) => ({ name: String(e.name) }));
 
     useServerWebsocketEvent('console output', (line) => {
         if (waitingNames.current) {
             waitingNames.current = false;
-            const names = plain(line).replace(/^\[[^\]]*\]:?\s*/, '').split(/,\s*/).filter(Boolean);
+            const names = plain(line)
+                .replace(/^\[[^\]]*\]:?\s*/, '')
+                .split(/,\s*/)
+                .filter(Boolean);
             setOnline((o) => (o ? { ...o, names } : o));
             return;
         }
@@ -100,7 +105,7 @@ export default function PlayersScreen() {
         try {
             await api.command(command);
             toast.success(done);
-            // Minecraft rewrites its JSON lists a moment after the command.
+
             window.setTimeout(() => {
                 void client.invalidateQueries({ queryKey: ['obsidian-mc', id, 'json'] });
                 refreshOnline();
@@ -152,7 +157,9 @@ export default function PlayersScreen() {
         );
         out.push(
             listed.has(n.toLowerCase())
-                ? action(UserMinus, `Remove ${n} from the whitelist`, () => run(`whitelist remove ${n}`, `Removed ${n} from the whitelist.`))
+                ? action(UserMinus, `Remove ${n} from the whitelist`, () =>
+                      run(`whitelist remove ${n}`, `Removed ${n} from the whitelist.`)
+                  )
                 : action(UserPlus, `Whitelist ${n}`, () => run(`whitelist add ${n}`, `Whitelisted ${n}.`))
         );
         out.push(action(Ban, `Ban ${n}`, () => run(`ban ${n}`, `Banned ${n}.`), true));
@@ -174,13 +181,15 @@ export default function PlayersScreen() {
         >
             <div className='grid grid-cols-2 gap-3 md:grid-cols-4'>
                 {[
-                    ['Online now', online ? `${online.names.length}` : '—', online ? `/${online.max}` : ''],
+                    ['Online now', online ? `${online.names.length}` : '-', online ? `/${online.max}` : ''],
                     ['Whitelisted', String(lists.whitelist.length), ''],
                     ['Operators', String(lists.ops.length), ''],
                     ['Banned', String(lists.banned.length), ''],
                 ].map(([label, value, suffix]) => (
                     <div key={label} className='rounded-xl border border-border bg-card px-5 py-4'>
-                        <p className='text-[0.6875rem] font-semibold tracking-[0.08em] text-muted-foreground uppercase'>{label}</p>
+                        <p className='text-[0.6875rem] font-semibold tracking-[0.08em] text-muted-foreground uppercase'>
+                            {label}
+                        </p>
                         <p className='mt-1 text-3xl font-bold tabular-nums'>
                             {value}
                             <span className='text-sm font-medium text-muted-foreground'>{suffix}</span>
@@ -241,14 +250,26 @@ export default function PlayersScreen() {
             ) : (
                 <ul className='grid gap-2 sm:grid-cols-2 xl:grid-cols-3'>
                     {people.map((p) => (
-                        <li key={p.name} className='flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5'>
-                            <img src={head(p.name)} alt='' loading='lazy' className='size-9 rounded-md [image-rendering:pixelated]' />
+                        <li
+                            key={p.name}
+                            className='flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5'
+                        >
+                            <img
+                                src={head(p.name)}
+                                alt=''
+                                loading='lazy'
+                                className='size-9 rounded-md [image-rendering:pixelated]'
+                            />
                             <span className='min-w-0 flex-1'>
                                 <span className='flex items-center gap-1.5 truncate text-sm font-semibold'>
                                     {p.name}
-                                    {opNames.has(p.name.toLowerCase()) && <Crown className='size-3 text-warning' aria-label='operator' />}
+                                    {opNames.has(p.name.toLowerCase()) && (
+                                        <Crown className='size-3 text-warning' aria-label='operator' />
+                                    )}
                                 </span>
-                                {p.note && <span className='block truncate text-xs text-muted-foreground'>{p.note}</span>}
+                                {p.note && (
+                                    <span className='block truncate text-xs text-muted-foreground'>{p.note}</span>
+                                )}
                             </span>
                             <span className='flex'>{actionsFor(p)}</span>
                         </li>

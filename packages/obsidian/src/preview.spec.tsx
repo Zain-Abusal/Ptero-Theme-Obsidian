@@ -1,11 +1,13 @@
-/**
- * Visual preview, off by default: `PREVIEW=<dir> npx vitest run src/preview.spec.tsx` renders the
- * main views with the SDK fixtures and writes static HTML pages beside a copy of dist/, for screenshots.
- */
 import { afterEach, beforeAll, test } from 'vitest';
 import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createExtensionTestHost, preloadTheme, renderView, type ExtensionTestHost, type RenderedView } from '@pterodactyl/sdk/testing';
+import {
+    createExtensionTestHost,
+    preloadTheme,
+    renderView,
+    type ExtensionTestHost,
+    type RenderedView,
+} from '@pterodactyl/sdk/testing';
 import theme from './theme';
 
 const out = process.env.PREVIEW;

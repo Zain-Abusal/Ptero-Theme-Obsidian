@@ -17,7 +17,6 @@ interface Allocation {
     readonly primary: boolean;
 }
 
-/** Reads `port:` and the default token from NuVotifier's config without a YAML parser. */
 export function readVotifierConfig(yaml: string): { port: number | null; token: string | null } {
     const port = /^port:\s*(\d+)/m.exec(yaml)?.[1];
     const token = /^tokens:\s*\n(?:\s+#.*\n)*\s+default:\s*['"]?([^'"\s]+)/m.exec(yaml)?.[1];
@@ -43,13 +42,16 @@ function Copyable({ label, value, mono = true }: { label: string; value: string;
                 className='flex items-start gap-2 rounded-lg border border-dashed border-border bg-background/50 px-3 py-2.5 text-left hover:bg-muted'
             >
                 <span className={cn('min-w-0 flex-1 text-sm break-all', mono && 'font-mono text-xs')}>{value}</span>
-                {copied ? <Check className='size-4 shrink-0 text-success' aria-label='Copied' /> : <Copy className='size-4 shrink-0 text-muted-foreground' aria-label='Copy' />}
+                {copied ? (
+                    <Check className='size-4 shrink-0 text-success' aria-label='Copied' />
+                ) : (
+                    <Copy className='size-4 shrink-0 text-muted-foreground' aria-label='Copy' />
+                )}
             </button>
         </div>
     );
 }
 
-/** NuVotifier, set up from the panel: install it, pick its port, and copy what voting sites ask for. */
 export default function VotifierScreen() {
     const { id, api } = useToolkit();
     const client = useQueryClient();
@@ -66,10 +68,15 @@ export default function VotifierScreen() {
     const allocations = useQuery({
         queryKey: ['obsidian-mc', id, 'allocations'],
         queryFn: async () => {
-            const { data } = await http.get<{ data: { attributes: { ip: string; ip_alias: string | null; port: number; is_default: boolean } }[] }>(
-                `/api/client/servers/${id}/network/allocations`
-            );
-            return data.data.map(({ attributes: a }): Allocation => ({ ip: a.ip, alias: a.ip_alias, port: a.port, primary: a.is_default }));
+            const { data } = await http.get<{
+                data: { attributes: { ip: string; ip_alias: string | null; port: number; is_default: boolean } }[];
+            }>(`/api/client/servers/${id}/network/allocations`);
+            return data.data.map(({ attributes: a }): Allocation => ({
+                ip: a.ip,
+                alias: a.ip_alias,
+                port: a.port,
+                primary: a.is_default,
+            }));
         },
     });
 
@@ -77,7 +84,8 @@ export default function VotifierScreen() {
     const primary = allocations.data?.find((a) => a.primary);
     const spare = allocations.data?.filter((a) => !a.primary) ?? [];
     const host = primary ? primary.alias || primary.ip : '…';
-    const portUsable = config?.port !== null && config?.port !== undefined && allocations.data?.some((a) => a.port === config.port);
+    const portUsable =
+        config?.port !== null && config?.port !== undefined && allocations.data?.some((a) => a.port === config.port);
 
     const install = async () => {
         setBusy(true);
@@ -97,7 +105,11 @@ export default function VotifierScreen() {
     const usePort = async (port: number) => {
         if (!files.data?.config) return;
         setBusy(true);
-        await attempt(() => api.write(CONFIG, setVotifierPort(files.data!.config!, port)), `Votifier now listens on ${port}. Restart to apply.`, toast);
+        await attempt(
+            () => api.write(CONFIG, setVotifierPort(files.data!.config!, port)),
+            `Votifier now listens on ${port}. Restart to apply.`,
+            toast
+        );
         await client.invalidateQueries({ queryKey: ['obsidian-mc', id, 'votifier'] });
         setBusy(false);
     };
@@ -114,7 +126,8 @@ export default function VotifierScreen() {
                     <div>
                         <h2 className='text-xl font-bold'>NuVotifier is not installed</h2>
                         <p className='mx-auto mt-1 max-w-md text-sm text-muted-foreground'>
-                            Voting sites tell your server about votes through NuVotifier. Install it, restart once, and come back here to finish.
+                            Voting sites tell your server about votes through NuVotifier. Install it, restart once, and
+                            come back here to finish.
                         </p>
                     </div>
                     <Button onClick={install} isLoading={busy} disabled={busy}>
@@ -124,18 +137,31 @@ export default function VotifierScreen() {
             ) : files.isLoading ? (
                 <Spinner size='large' centered />
             ) : !files.data?.config ? (
-                <Alert type='info'>NuVotifier is installed. Restart the server once so it creates its config and keys, then reload this page.</Alert>
+                <Alert type='info'>
+                    NuVotifier is installed. Restart the server once so it creates its config and keys, then reload this
+                    page.
+                </Alert>
             ) : (
                 <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]'>
                     <div className='flex flex-col gap-6'>
-                        <Panel title='What voting sites ask for' aside={<Badge tone='success' variant='soft'>Installed</Badge>}>
+                        <Panel
+                            title='What voting sites ask for'
+                            aside={
+                                <Badge tone='success' variant='soft'>
+                                    Installed
+                                </Badge>
+                            }
+                        >
                             <div className='grid gap-4 sm:grid-cols-2'>
                                 <Copyable label='Server address' value={host} />
-                                <Copyable label='Votifier port' value={String(config?.port ?? '—')} />
+                                <Copyable label='Votifier port' value={String(config?.port ?? '-')} />
                             </div>
                             {files.data.key && (
                                 <div className='mt-4'>
-                                    <Copyable label='Public key (v1 sites)' value={files.data.key.replace(/-----[^-]+-----|\s/g, '')} />
+                                    <Copyable
+                                        label='Public key (v1 sites)'
+                                        value={files.data.key.replace(/-----[^-]+-----|\s/g, '')}
+                                    />
                                 </div>
                             )}
                             {config?.token && (
@@ -147,28 +173,33 @@ export default function VotifierScreen() {
                         <Panel title='Set it up'>
                             <Step n={1}>Give Votifier its own port</Step>
                             <p className='mb-5 text-sm text-muted-foreground'>
-                                The port must be one of this server's allocations, and not the game port. Pick one on the right.
+                                The port must be one of this server's allocations, and not the game port. Pick one on
+                                the right.
                             </p>
                             <Step n={2}>Add the server on each voting site</Step>
                             <p className='mb-5 text-sm text-muted-foreground'>
-                                Paste the address, the Votifier port and the public key or token where the site asks for them.
+                                Paste the address, the Votifier port and the public key or token where the site asks for
+                                them.
                             </p>
                             <Step n={3}>Reward votes</Step>
                             <p className='text-sm text-muted-foreground'>
-                                Votifier only receives votes. Pair it with a rewards plugin from the Plugins page, such as VotingPlugin or SuperbVote.
+                                Votifier only receives votes. Pair it with a rewards plugin from the Plugins page, such
+                                as VotingPlugin or SuperbVote.
                             </p>
                         </Panel>
                     </div>
                     <Panel title='Port' aside={<Network className='size-4 text-muted-foreground' aria-hidden />}>
                         {!portUsable && (
                             <p className='mb-3 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning'>
-                                Port {config?.port ?? '?'} is not one of this server's allocations, so voting sites cannot reach it.
+                                Port {config?.port ?? '?'} is not one of this server's allocations, so voting sites
+                                cannot reach it.
                             </p>
                         )}
                         {allocations.isLoading && <Spinner centered />}
                         {spare.length === 0 && !allocations.isLoading && (
                             <p className='text-sm text-muted-foreground'>
-                                This server has only its game port. Add an allocation on the Network page, then pick it here.
+                                This server has only its game port. Add an allocation on the Network page, then pick it
+                                here.
                             </p>
                         )}
                         <ul className='flex flex-col gap-1.5'>
@@ -180,7 +211,9 @@ export default function VotifierScreen() {
                                         onClick={() => usePort(a.port)}
                                         className={cn(
                                             'flex w-full items-center justify-between rounded-lg border px-3 py-2 font-mono text-sm',
-                                            a.port === config?.port ? 'border-success/50 bg-success/10' : 'border-border hover:bg-muted'
+                                            a.port === config?.port
+                                                ? 'border-success/50 bg-success/10'
+                                                : 'border-border hover:bg-muted'
                                         )}
                                     >
                                         {a.alias || a.ip}:{a.port}

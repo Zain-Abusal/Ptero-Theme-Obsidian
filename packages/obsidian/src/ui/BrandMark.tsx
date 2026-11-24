@@ -1,6 +1,5 @@
 import { cn } from '@pterodactyl/sdk/theme';
 
-/** The default mark beside the brand name when no logo is uploaded: an isometric gem. */
 export default function BrandMark({ className }: { className?: string }) {
     return (
         <svg viewBox='0 0 32 32' className={cn('size-7 shrink-0', className)} aria-hidden>
