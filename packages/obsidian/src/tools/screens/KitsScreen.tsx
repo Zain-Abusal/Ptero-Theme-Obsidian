@@ -21,7 +21,7 @@ const tones: Record<Kit['tone'], string> = {
 
 /** Installs a kit item by item, skipping what is already there, and shows each one's progress. */
 function InstallDialog({ kit, onClose }: { kit: Kit; onClose: () => void }) {
-    const { api, id, loaders, gameVersion } = useToolkit();
+    const { api, id, server, loaders, gameVersion } = useToolkit();
     const client = useQueryClient();
     const folder = useDirectory('/plugins');
     const names = (folder.data ?? []).map((e) => e.name);
@@ -35,6 +35,9 @@ function InstallDialog({ kit, onClose }: { kit: Kit; onClose: () => void }) {
         await api.mkdir('/', 'plugins').catch(() => undefined);
         const set = (item: KitItem, state: ItemState) => setStates((s) => ({ ...s, [item.name]: state }));
 
+        // Resolve every download first, then fetch and upload them together: only what the browser
+        // cannot download is pulled, which keeps kits under the panel's 5-pulls-per-10-minutes limit.
+        const resolved: { item: KitItem; url: string; filename: string }[] = [];
         for (const item of kit.items) {
             if (looksInstalled(names, ...itemKeys(item))) {
                 set(item, 'skipped');
@@ -42,17 +45,29 @@ function InstallDialog({ kit, onClose }: { kit: Kit; onClose: () => void }) {
             }
             set(item, 'installing');
             try {
-                const file = await kitItemDownload(item, loaders, gameVersion);
-                await api.pull(file.url, '/plugins', file.filename);
-                set(item, 'done');
+                resolved.push({ item, ...(await kitItemDownload(item, loaders, gameVersion)) });
             } catch (error) {
                 set(item, 'failed');
                 setErrors((e) => ({ ...e, [item.name]: error instanceof Error ? error.message : 'Failed' }));
             }
         }
+        const byFile = new Map(resolved.map((r) => [r.filename, r.item]));
+        const summary = await api.installMany(
+            resolved.map((r) => ({ url: r.url, directory: '/plugins', filename: r.filename })),
+            {
+                maxMb: server.attributes.upload_size,
+                onFile: (file, result, error) => {
+                    const item = byFile.get(file.filename);
+                    if (!item) return;
+                    set(item, result === 'failed' ? 'failed' : 'done');
+                    if (error) setErrors((e) => ({ ...e, [item.name]: error }));
+                },
+            }
+        );
         await client.invalidateQueries({ queryKey: ['obsidian-mc', id, 'dir', '/plugins'] });
         setRunning(false);
-        toast.success(`${kit.name} is installed. Restart the server to load it.`);
+        if (summary.failed.length) toast.error(`${summary.failed.length} plugins in ${kit.name} could not be installed.`);
+        else toast.success(`${kit.name} is installed. Restart the server to load it.`);
     };
 
     return (

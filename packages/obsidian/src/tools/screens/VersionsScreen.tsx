@@ -14,7 +14,7 @@ import {
     type SdkServerStartup,
 } from '@pterodactyl/sdk';
 import { MARKER, softwareLabel, type Installed } from '../lib/minecraft';
-import { providers, providerById, type Provider } from '../lib/software';
+import { jarOf, providers, providerById, type Provider } from '../lib/software';
 import { useToolkit } from '../lib/useToolkit';
 import Page, { Eyebrow, Panel, Step, attempt } from '../ui/Page';
 
@@ -25,12 +25,6 @@ const icons: Record<Provider['id'], typeof Box> = {
     vanilla: Scroll,
     fabric: Cpu,
     velocity: Network,
-};
-
-/** The SERVER_JARFILE variable, which the egg's startup command runs. */
-const jarOf = (startup: SdkServerStartup | undefined) => {
-    const variable = startup?.data.find((v) => v.attributes.env_variable === 'SERVER_JARFILE')?.attributes;
-    return variable?.server_value || variable?.default_value || 'server.jar';
 };
 
 function useRunState(uuid: string) {
@@ -160,7 +154,7 @@ export default function VersionsScreen() {
                 await api.remove('/', [jar]);
             }
             setStep(`Downloading ${download.filename}…`);
-            await api.pull(download.url, '/', jar);
+            await api.install(download.url, '/', jar, { maxMb: server.attributes.upload_size });
             if (eula) await api.write('/eula.txt', 'eula=true\n');
             const marker: Installed = { software, version, build: download.build };
             await api.write(`/${MARKER}`, JSON.stringify({ ...marker, installedAt: new Date().toISOString() }, null, 2));

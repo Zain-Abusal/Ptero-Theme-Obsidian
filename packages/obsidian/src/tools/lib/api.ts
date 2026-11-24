@@ -181,13 +181,10 @@ export async function fetchAsFile(url: string, filename: string, maxBytes: numbe
             controller.abort();
             return null;
         }
-        const blob = await response.blob();
-        if (blob.size === 0 || blob.size > maxBytes) return null;
-        if (ARCHIVE.test(filename)) {
-            const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
-            if (head[0] !== 0x50 || head[1] !== 0x4b) return null;
-        }
-        return new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+        const body = new Uint8Array(await response.arrayBuffer());
+        if (body.byteLength === 0 || body.byteLength > maxBytes) return null;
+        if (ARCHIVE.test(filename) && (body[0] !== 0x50 || body[1] !== 0x4b)) return null;
+        return new File([body], filename, { type: 'application/octet-stream' });
     } catch {
         return null;
     }

@@ -1,7 +1,8 @@
-import type { KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { ArrowRight, ChevronsDown, TerminalSquare } from 'lucide-react';
-import { Button, SpinnerOverlay, cn } from '@pterodactyl/sdk';
+import { Button, SpinnerOverlay, cn, useCurrentServer } from '@pterodactyl/sdk';
 import type { ServerConsoleCommand, ViewProps } from '@pterodactyl/sdk/theme';
+import ConsoleTools from './console/ConsoleTools';
 
 function onCommandKey(command: ServerConsoleCommand, event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'ArrowUp') {
@@ -17,18 +18,18 @@ function onCommandKey(command: ServerConsoleCommand, event: KeyboardEvent<HTMLIn
 /** The console in one framed card: a header, the engine's terminal canvas, and a prompt with a send button. */
 export default function Terminal({ model, className }: ViewProps<'server.terminal'>) {
     const { command } = model;
+    // The log view is portalled over the canvas, which stays mounted underneath.
+    const [overlay, setOverlay] = useState<HTMLDivElement | null>(null);
+    // The tools need the server page around them; without it (previews, tests) the console still renders.
+    const server = useCurrentServer();
 
     return (
         <div className={cn('relative flex w-full flex-col overflow-hidden rounded-xl border border-border bg-terminal', className)}>
             <SpinnerOverlay visible={model.loading} size='large' />
-            <div className='flex items-center gap-2 border-b border-border/70 px-4 py-2.5'>
+            <div className='flex min-h-12 items-center gap-2 border-b border-border/70 py-1.5 pr-2 pl-4'>
                 <TerminalSquare className='size-4 text-muted-foreground' aria-hidden />
                 <span className='obs-eyebrow text-[0.62rem]'>Console</span>
-                <span className='ml-auto flex gap-1.5' aria-hidden>
-                    <span className='size-2.5 rounded-full bg-border' />
-                    <span className='size-2.5 rounded-full bg-border' />
-                    <span className='size-2.5 rounded-full bg-border' />
-                </span>
+                {server && <ConsoleTools server={server} command={command} overlay={overlay} />}
             </div>
             {model.failed && (
                 <div
@@ -41,7 +42,7 @@ export default function Terminal({ model, className }: ViewProps<'server.termina
                     </Button>
                 </div>
             )}
-            <div className='relative min-h-64 flex-1 overflow-hidden px-3 pt-2 font-mono text-[0.82rem] caret-transparent'>
+            <div ref={setOverlay} className='relative min-h-64 flex-1 overflow-hidden px-3 pt-2 font-mono text-[0.82rem] caret-transparent'>
                 <model.Terminal />
                 {model.scrolledUp && (
                     <button

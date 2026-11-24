@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { ChevronDown, LayoutGrid, LogOut, Menu, Moon, Play, RotateCw, Shield, Square, Sun, X } from 'lucide-react';
-import { Avatar, NamedIcon, PanelLink, SpinnerOverlay, Tooltip, cn, toast, usePanelLocation } from '@pterodactyl/sdk';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { ChevronDown, LayoutGrid, LogOut, Menu, Moon, Paintbrush, Palette, Play, RotateCw, Shield, Square, Sun, Users, X } from 'lucide-react';
+import { Avatar, DropdownMenu, NamedIcon, PanelLink, SpinnerOverlay, Tooltip, cn, toast, usePanelLocation } from '@pterodactyl/sdk';
 import {
     Main,
     Navigation,
@@ -25,6 +25,12 @@ import Decor from '../ui/Decor';
 import StatusDot from '../ui/StatusDot';
 import ServerIcon from '../lib/serverIcon';
 import Switcher from './Switcher';
+import { useActiveIndicator } from '../lib/indicator';
+import { SURFACES, useSurface, withTransition } from '../lib/surface';
+import { defaultTint, useServerMeta } from '../lib/serverMeta';
+import { usePlayerCount } from '../lib/players';
+
+const CustomizeServer = lazy(() => import('./CustomizeServer'));
 
 function Brand({ model }: { model: AppLayoutModel }) {
     const settings = useObsidian();
@@ -135,22 +141,55 @@ function SidebarServer({ area }: { area: ServerArea }) {
             .finally(() => setSending(false));
     };
 
+    const meta = useServerMeta(area.identifier);
+    const tint = meta.color ?? defaultTint(area.uuid);
+    const players = usePlayerCount(address, state === 'running');
+    const [customizing, setCustomizing] = useState(false);
+
     return (
-        <div className='obs-surface mt-1 flex flex-col gap-3 p-3'>
+        <div
+            className='obs-surface relative mt-1 flex flex-col gap-3 overflow-hidden p-3'
+            style={{
+                backgroundImage: `radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, ${tint} 14%, transparent), transparent 60%)`,
+            }}
+        >
             <div className='flex items-center gap-3'>
                 <ServerIcon identifier={area.identifier} uuid={area.uuid} size={40} />
-                <div className='min-w-0'>
+                <div className='min-w-0 flex-1'>
                     <p className='truncate text-sm font-bold tracking-tight'>{area.name}</p>
                     {address && <p className='truncate font-mono text-[0.7rem] text-muted-foreground'>{address}</p>}
                 </div>
+                {can(server, 'file.update') && (
+                    <Tooltip content='Customize'>
+                        <button
+                            type='button'
+                            aria-label='Customize this server'
+                            onClick={() => setCustomizing(true)}
+                            className='grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground'
+                        >
+                            <Paintbrush className='size-3.5' aria-hidden />
+                        </button>
+                    </Tooltip>
+                )}
             </div>
             <div className='flex items-center justify-between gap-2 text-[0.7rem]'>
                 <span className='obs-eyebrow flex items-center gap-1.5 text-[0.65rem] text-foreground'>
-                    <StatusDot tone={stateTone(state)} />
+                    <StatusDot tone={stateTone(state)} className={state === 'running' ? 'obs-live' : undefined} />
                     {state ? stateLabel[state] : 'Connecting'}
                 </span>
+                {players && (
+                    <span className='obs-num flex items-center gap-1 font-medium text-muted-foreground'>
+                        <Users className='size-3' aria-hidden />
+                        {players.online}/{players.max}
+                    </span>
+                )}
                 <Slot name='server.navigation.before' data={server} compact />
             </div>
+            {customizing && (
+                <Suspense fallback={null}>
+                    <CustomizeServer server={server} onClose={() => setCustomizing(false)} />
+                </Suspense>
+            )}
             {area.conflict === null && (
                 <div className='flex gap-1.5'>
                     <PowerButton
@@ -190,6 +229,9 @@ function AccountLinks() {
 function Sidebar({ model }: { model: AppLayoutModel }) {
     const settings = useObsidian();
     const { area } = model;
+    const { pathname } = usePanelLocation();
+    const navs = useActiveIndicator<HTMLDivElement>([pathname, area.kind]);
+    const tint = useServerMeta(area.kind === 'server' ? area.identifier : undefined).color;
     const admin = model.links.find((link) => link.id === 'admin');
     const serverItems = area.kind === 'server' && area.adminLink ? [...area.nav.items, area.adminLink] : null;
 
@@ -197,6 +239,13 @@ function Sidebar({ model }: { model: AppLayoutModel }) {
         <>
             <Brand model={model} />
             {area.kind === 'server' && settings.sidebarServer && <SidebarServer area={area} />}
+            <div
+                ref={navs}
+                data-obs-indicated
+                className='relative'
+                style={area.kind === 'server' ? ({ '--obs-server-tint': tint ?? defaultTint(area.uuid) } as React.CSSProperties) : undefined}
+            >
+            <span className='obs-indicator' aria-hidden />
             <nav aria-label='Main' className='mt-3 flex flex-col gap-0.5'>
                 <Slot name='nav.items.before' compact />
                 <PanelLink destination={{ to: '/' }} exact className='obs-nav-link'>
@@ -238,7 +287,37 @@ function Sidebar({ model }: { model: AppLayoutModel }) {
                     {area.kind === 'account' && <AreaSlot area={area} at='after' />}
                 </nav>
             )}
+            </div>
         </>
+    );
+}
+
+/** The surface library: each surface is a whole look in both schemes; the choice is kept per browser. */
+function SurfaceMenu() {
+    const [surface, setSurface] = useSurface();
+
+    return (
+        <DropdownMenu
+            triggerClassName='grid size-8 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground'
+            triggerContent={
+                <>
+                    <Palette className='size-4' aria-hidden />
+                    <span className='sr-only'>Surface</span>
+                </>
+            }
+        >
+            <DropdownMenu.Item checked={surface === null} onClick={() => setSurface(null)}>
+                Panel default
+            </DropdownMenu.Item>
+            {SURFACES.map((s) => (
+                <DropdownMenu.Item key={s.id} checked={surface === s.id} onClick={() => setSurface(s.id)}>
+                    <span className='flex items-center gap-2.5'>
+                        <span className='size-3.5 rounded-full border border-border' style={{ background: s.swatch }} />
+                        {s.label}
+                    </span>
+                </DropdownMenu.Item>
+            ))}
+        </DropdownMenu>
     );
 }
 
@@ -258,15 +337,21 @@ function UserCard({ model }: { model: AppLayoutModel }) {
                     <span className='block truncate text-[0.7rem] text-muted-foreground'>{user.email}</span>
                 </span>
             </PanelLink>
+            <SurfaceMenu />
             {setScheme && (
                 <Tooltip content={scheme === 'dark' ? 'Light scheme' : 'Dark scheme'}>
                     <button
                         type='button'
                         aria-label={scheme === 'dark' ? 'Use the light scheme' : 'Use the dark scheme'}
-                        onClick={() => setScheme(scheme === 'dark' ? 'light' : 'dark')}
-                        className='grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground'
+                        onClick={(event) =>
+                            withTransition(() => setScheme(scheme === 'dark' ? 'light' : 'dark'), {
+                                x: event.clientX,
+                                y: event.clientY,
+                            })
+                        }
+                        className='grid size-8 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground'
                     >
-                        <SchemeIcon className='size-4' aria-hidden />
+                        <SchemeIcon className='size-4 transition-transform duration-500 hover:rotate-45' aria-hidden />
                     </button>
                 </Tooltip>
             )}
@@ -351,7 +436,7 @@ export default function Shell({ model, children }: ViewProps<'layout.app'>) {
                 </div>
             </aside>
             <div className='flex min-w-0 flex-1 flex-col'>
-                <header className='sticky top-0 z-30 flex h-16 items-center gap-3 px-4 backdrop-blur-md sm:px-6 lg:px-8'>
+                <header className='obs-topbar sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-transparent bg-background/92 px-4 sm:px-6 lg:px-8'>
                     <button
                         type='button'
                         aria-expanded={open}

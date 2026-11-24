@@ -6,6 +6,7 @@ import { bytes, stateLabel, stateTone } from '../lib/format';
 import { can, primaryAddress, sendPower, useAllServers, useLive } from '../lib/servers';
 import { useObsidian } from '../lib/settings';
 import { usePins, useRecent } from '../lib/storage';
+import { defaultTint, useServersMeta } from '../lib/serverMeta';
 import ServerIcon from '../lib/serverIcon';
 import StatusDot from '../ui/StatusDot';
 
@@ -132,7 +133,19 @@ export default function Switcher({ area }: { area: AppArea }) {
             .sort((a, b) => rank(a) - rank(b) || a.attributes.name.localeCompare(b.attributes.name));
     }, [servers, recent, term, isPinned]);
 
-    const selected = ordered[Math.min(index, ordered.length - 1)];
+    const meta = useServersMeta(open ? (servers ?? []).map((s) => s.attributes.identifier) : []);
+    // Grouped servers after the ungrouped ones, in their group's order; the list index stays flat for the keys.
+    const grouped = useMemo(() => {
+        const groupOf = (s: SdkServer) => meta[s.attributes.identifier]?.group?.trim() || '';
+        return [...ordered].sort((a, b) => {
+            const ga = groupOf(a);
+            const gb = groupOf(b);
+            return ga === gb ? 0 : ga === '' ? -1 : gb === '' ? 1 : ga.localeCompare(gb);
+        });
+    }, [ordered, meta]);
+    const groupOf = (s: SdkServer) => meta[s.attributes.identifier]?.group?.trim() || '';
+
+    const selected = grouped[Math.min(index, grouped.length - 1)];
 
     const go = (server: SdkServer, to: 'console' | 'files' = 'console') => {
         setOpen(false);
@@ -169,7 +182,7 @@ export default function Switcher({ area }: { area: AppArea }) {
 
     const onKeyDown = (event: KeyboardEvent) => {
         if (event.key === 'Escape') setOpen(false);
-        else if (event.key === 'ArrowDown') setIndex((i) => Math.min(i + 1, ordered.length - 1));
+        else if (event.key === 'ArrowDown') setIndex((i) => Math.min(i + 1, grouped.length - 1));
         else if (event.key === 'ArrowUp') setIndex((i) => Math.max(i - 1, 0));
         else if (event.key === 'Enter' && selected) go(selected);
         else if (event.key.toLowerCase() === 'p' && (event.altKey || event.target === event.currentTarget) && selected)
@@ -205,7 +218,7 @@ export default function Switcher({ area }: { area: AppArea }) {
                     role='dialog'
                     aria-label='Switch server'
                     onKeyDown={onKeyDown}
-                    className='fixed inset-x-3 top-16 z-50 overflow-hidden rounded-2xl border border-border bg-popover shadow-xl sm:absolute sm:inset-x-auto sm:top-12 sm:left-0 sm:w-[min(46rem,calc(100vw-2rem))]'
+                    className='obs-pop fixed inset-x-3 top-16 z-50 overflow-hidden rounded-2xl border border-border bg-popover shadow-xl sm:absolute sm:inset-x-auto sm:top-12 sm:left-0 sm:w-[min(46rem,calc(100vw-2rem))]'
                 >
                     <div className='flex items-center gap-3 border-b border-border px-4'>
                         <Search className='size-4 text-muted-foreground' aria-hidden />
@@ -230,8 +243,11 @@ export default function Switcher({ area }: { area: AppArea }) {
                                 <p className='px-2 py-6 text-center text-sm text-muted-foreground'>No servers match.</p>
                             )}
                             <ul role='listbox' aria-label='Servers'>
-                                {ordered.map((server, i) => (
+                                {grouped.map((server, i) => (
                                     <li key={server.attributes.uuid} role='option' aria-selected={server === selected}>
+                                        {groupOf(server) && groupOf(server) !== (i > 0 ? groupOf(grouped[i - 1]) : '') && (
+                                            <p className='obs-eyebrow px-2 pt-3 pb-1 text-[0.6rem]'>{groupOf(server)}</p>
+                                        )}
                                         <div
                                             className={cn(
                                                 'group flex items-center gap-2.5 rounded-lg p-2 text-left',
@@ -244,11 +260,21 @@ export default function Switcher({ area }: { area: AppArea }) {
                                                 onClick={() => go(server)}
                                                 className='flex min-w-0 flex-1 items-center gap-2.5 text-left'
                                             >
-                                                <ServerIcon
-                                                    identifier={server.attributes.identifier}
-                                                    uuid={server.attributes.uuid}
-                                                    size={30}
-                                                />
+                                                <span className='relative'>
+                                                    <ServerIcon
+                                                        identifier={server.attributes.identifier}
+                                                        uuid={server.attributes.uuid}
+                                                        size={30}
+                                                    />
+                                                    <span
+                                                        aria-hidden
+                                                        className='absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 border-popover'
+                                                        style={{
+                                                            background:
+                                                                meta[server.attributes.identifier]?.color ?? defaultTint(server.attributes.uuid),
+                                                        }}
+                                                    />
+                                                </span>
                                                 <span className='min-w-0'>
                                                     <span className='block truncate text-sm font-semibold'>
                                                         {server.attributes.name}

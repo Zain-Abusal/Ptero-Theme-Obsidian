@@ -149,3 +149,42 @@ test('classifies and highlights console lines', () => {
         { text: ' left', match: false },
     ]);
 });
+
+test('console tools render inside a server page and filter the buffered output', async () => {
+    const { render, screen, fireEvent, act } = await import('@testing-library/react');
+    const { createElement } = await import('react');
+    const { createExtensionTestHost, createTestServer } = await import('@pterodactyl/sdk/testing');
+    const { default: ConsoleTools } = await import('../views/console/ConsoleTools');
+
+    const server = createTestServer({ identifier: 'a1b2c3d4' });
+    const host = createExtensionTestHost({ server });
+    const overlay = document.createElement('div');
+    document.body.append(overlay);
+    const command = {
+        allowed: true,
+        disabled: false,
+        value: '',
+        history: ['list'],
+        setValue: () => undefined,
+        previous: () => undefined,
+        next: () => undefined,
+        submit: () => undefined,
+    };
+
+    const view = render(createElement(host.Wrapper, null, createElement(ConsoleTools, { server, command, overlay })));
+    await act(async () => {
+        host.emitWebsocket('console output', '[12:00:00 INFO]: Done\n[12:00:01 WARN]: Can\'t keep up!');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Warnings' }));
+    const log = screen.getByRole('log', { name: 'Filtered console' });
+    expect(overlay.contains(log)).toBe(true);
+    expect(log.textContent).toContain("Can't keep up!");
+    expect(log.textContent).not.toContain('Done');
+    expect(screen.getByRole('button', { name: 'Copy console output' }).hasAttribute('disabled')).toBe(false);
+
+    view.unmount();
+    host.dispose();
+    overlay.remove();
+}, 30_000);
