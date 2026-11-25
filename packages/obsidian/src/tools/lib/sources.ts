@@ -83,7 +83,7 @@ export function modrinthLoaders(kind: Kind, loaders: string[]): string[] {
     return loaders;
 }
 
-async function searchModrinth(o: SearchOptions): Promise<{ hits: Project[]; total: number }> {
+async function searchModrinth(o: SearchOptions, signal?: AbortSignal): Promise<{ hits: Project[]; total: number }> {
     const category = categories.find((c) => c.id === o.category)?.modrinth;
     const facets: string[][] = [MODRINTH_TYPES[o.kind]];
 
@@ -99,7 +99,8 @@ async function searchModrinth(o: SearchOptions): Promise<{ hits: Project[]; tota
         facets: JSON.stringify(facets),
     });
     const data = await getJson<{ hits: ModrinthHit[]; total_hits: number }>(
-        `https://api.modrinth.com/v2/search?${params}`
+        `https://api.modrinth.com/v2/search?${params}`,
+        signal
     );
 
     return {
@@ -143,6 +144,7 @@ export async function modrinthDownload(
 ): Promise<Resolved> {
     const query = (withVersion: boolean) =>
         new URLSearchParams({
+            include_changelog: 'false',
             ...(loaders.length ? { loaders: JSON.stringify(loaders) } : {}),
             ...(withVersion && gameVersion ? { game_versions: JSON.stringify([gameVersion]) } : {}),
         });
@@ -176,7 +178,7 @@ interface HangarProject {
 
 const hangarPlatform = (loaders: string[]) => (loaders.includes('velocity') ? 'VELOCITY' : 'PAPER');
 
-async function searchHangar(o: SearchOptions): Promise<{ hits: Project[]; total: number }> {
+async function searchHangar(o: SearchOptions, signal?: AbortSignal): Promise<{ hits: Project[]; total: number }> {
     const category = categories.find((c) => c.id === o.category)?.hangar;
     const params = new URLSearchParams({
         q: o.query,
@@ -188,7 +190,8 @@ async function searchHangar(o: SearchOptions): Promise<{ hits: Project[]; total:
         ...(category ? { category } : {}),
     });
     const data = await getJson<{ pagination: { count: number }; result: HangarProject[] }>(
-        `https://hangar.papermc.io/api/v1/projects?${params}`
+        `https://hangar.papermc.io/api/v1/projects?${params}`,
+        signal
     );
 
     return {
@@ -279,16 +282,16 @@ async function searchSpigot(o: SearchOptions): Promise<{ hits: Project[]; total:
     };
 }
 
-export function search(source: Source, options: SearchOptions) {
+export function search(source: Source, options: SearchOptions, signal?: AbortSignal) {
     if (source === 'curseforge') {
         if (!options.cfKey) return Promise.resolve({ hits: [], total: 0 });
         const kind =
             options.kind === 'plugin' || options.kind === 'mod' || options.kind === 'modpack' ? options.kind : 'mod';
         return cfSearch(options.cfKey, { ...options, kind, pageSize: PAGE });
     }
-    if (source === 'hangar') return searchHangar(options);
+    if (source === 'hangar') return searchHangar(options, signal);
     if (source === 'spigot') return searchSpigot(options);
-    return searchModrinth(options);
+    return searchModrinth(options, signal);
 }
 
 export async function downloadFor(
