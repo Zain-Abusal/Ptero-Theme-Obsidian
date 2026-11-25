@@ -1,4 +1,7 @@
+import type { ComponentType } from 'react';
+import type { ExtensionSetupContext, ScreenComponentProps } from '@pterodactyl/sdk';
 import { defineTheme, lazyView } from '@pterodactyl/sdk/theme';
+import { ui as manifestUi } from '../extension.json';
 import { obsidianSkins } from './skins';
 import AuthLayout from './views/AuthLayout';
 import AreaLayout from './views/AreaLayout';
@@ -14,21 +17,13 @@ if (typeof document !== 'undefined') {
 
 const visible = ({ server }: { server?: Parameters<typeof isMinecraft>[0] }) => isMinecraft(server);
 
-const SCREENS = {
-    players: () => import('./tools/screens/PlayersScreen'),
-    versions: () => import('./tools/screens/VersionsScreen'),
-    flags: () => import('./tools/screens/FlagsScreen'),
-    plugins: () => import('./tools/screens/PluginsScreen'),
-    mods: () => import('./tools/screens/ModsScreen'),
-    kits: () => import('./tools/screens/KitsScreen'),
-    properties: () => import('./tools/screens/PropertiesScreen'),
-    votifier: () => import('./tools/screens/VotifierScreen'),
-    importer: () => import('./tools/screens/ImporterScreen'),
-    packs: () => import('./tools/screens/PacksScreen'),
-    worlds: () => import('./tools/screens/WorldsScreen'),
-    scheduler: () => import('./tools/screens/SchedulerScreen'),
-    doctor: () => import('./tools/screens/DoctorScreen'),
-};
+const screenFiles = import.meta.glob<{ default: ComponentType<ScreenComponentProps> }>('./tools/screens/*Screen.tsx');
+const registerHooks = import.meta.glob<{ default: (context: ExtensionSetupContext) => void }>('./**/*.register.ts', {
+    eager: true,
+});
+
+export const screenFile = (id: string) =>
+    `./tools/screens/${id.replace(/(^|-)([a-z])/g, (_, __, c: string) => c.toUpperCase())}Screen.tsx`;
 
 export default defineTheme({
     ui: { ...obsidianSkins, PageFooter: Footer },
@@ -47,7 +42,18 @@ export default defineTheme({
         'server.stats': lazyView(() => import('./views/Stats')),
         'page.account.overview': lazyView(() => import('./views/AccountOverview')),
     },
-    setup({ screens }) {
-        for (const [id, load] of Object.entries(SCREENS)) screens.register(id, load, { visible });
+    setup(context) {
+        const registered = new Set<string>();
+        const screens = {
+            register: (...args: Parameters<ExtensionSetupContext['screens']['register']>) => {
+                registered.add(args[0]);
+                context.screens.register(...args);
+            },
+        };
+        for (const hook of Object.values(registerHooks)) hook.default({ ...context, screens });
+        for (const { id } of manifestUi.screens) {
+            const load = screenFiles[screenFile(id)];
+            if (load && !registered.has(id)) context.screens.register(id, load, { visible });
+        }
     },
 });

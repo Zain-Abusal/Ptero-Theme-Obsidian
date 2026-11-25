@@ -59,9 +59,10 @@ export async function detect(api: ServerApi): Promise<Installed> {
         } catch {}
     }
 
-    const root = (await api.listOrEmpty('/')).map((e) => e.name.toLowerCase());
+    const [entries, history] = await Promise.all([api.listOrEmpty('/'), api.readOrNull('/version_history.json')]);
+    const root = entries.map((e) => e.name.toLowerCase());
     const has = (name: string) => root.includes(name);
-    const version = fromHistory(await api.readOrNull('/version_history.json'));
+    const version = fromHistory(history);
 
     if (has('velocity.toml')) return { software: 'velocity', version };
     if (has('purpur.yml')) return { software: 'purpur', version };
