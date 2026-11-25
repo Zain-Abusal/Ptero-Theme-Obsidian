@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Box, Coffee, Cpu, Feather, Network, Scroll, Send, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Coffee, TriangleAlert } from 'lucide-react';
 import {
     Badge,
     Button,
@@ -17,15 +17,7 @@ import { MARKER, softwareLabel, type Installed } from '../lib/minecraft';
 import { jarOf, providers, providerById, type Provider } from '../lib/software';
 import { useToolkit } from '../lib/useToolkit';
 import Page, { Eyebrow, Panel, Step, attempt } from '../ui/Page';
-
-const icons: Record<Provider['id'], typeof Box> = {
-    paper: Send,
-    purpur: Box,
-    folia: Feather,
-    vanilla: Scroll,
-    fabric: Cpu,
-    velocity: Network,
-};
+import SoftwareLogo from '../ui/SoftwareLogo';
 
 function useRunState(uuid: string) {
     const { data } = useServerResources(uuid, (r) => r);
@@ -35,12 +27,10 @@ function useRunState(uuid: string) {
 }
 
 function Current({ installed, jar, running }: { installed: Installed | undefined; jar: string; running: string }) {
-    const Glyph = installed && installed.software in icons ? icons[installed.software as Provider['id']] : Box;
-
     return (
         <div className='flex items-center gap-4 rounded-xl border border-border bg-card p-5'>
             <span className='grid size-14 place-items-center rounded-xl border border-border bg-muted'>
-                <Glyph className='size-6' aria-hidden />
+                <SoftwareLogo software={installed?.software ?? 'unknown'} className='size-6' />
             </span>
             <div className='min-w-0'>
                 <Eyebrow>Now running</Eyebrow>
@@ -193,40 +183,37 @@ export default function VersionsScreen() {
                 <div className='min-w-0'>
                     <Step n={1}>Software</Step>
                     <div className='grid grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-3'>
-                        {providers.map((p) => {
-                            const Glyph = icons[p.id];
-                            return (
-                                <button
-                                    key={p.id}
-                                    type='button'
-                                    aria-pressed={software === p.id}
-                                    onClick={() => setSoftware(p.id)}
-                                    className={cn(
-                                        'flex items-center gap-3 rounded-xl border p-3.5 text-left transition',
-                                        software === p.id
-                                            ? 'border-foreground/30 bg-muted'
-                                            : 'border-border bg-card hover:bg-muted/50'
-                                    )}
-                                >
-                                    <span className='grid size-10 shrink-0 place-items-center rounded-lg border border-border bg-background'>
-                                        <Glyph className='size-4' aria-hidden />
+                        {providers.map((p) => (
+                            <button
+                                key={p.id}
+                                type='button'
+                                aria-pressed={software === p.id}
+                                onClick={() => setSoftware(p.id)}
+                                className={cn(
+                                    'flex items-center gap-3 rounded-xl border p-3.5 text-left transition',
+                                    software === p.id
+                                        ? 'border-foreground/30 bg-muted'
+                                        : 'border-border bg-card hover:bg-muted/50'
+                                )}
+                            >
+                                <span className='grid size-10 shrink-0 place-items-center rounded-lg border border-border bg-background'>
+                                    <SoftwareLogo software={p.id} className='size-4' />
+                                </span>
+                                <span className='min-w-0'>
+                                    <span className='flex items-center gap-2 text-sm font-bold'>
+                                        {p.label}
+                                        {installed?.software === p.id && (
+                                            <Badge size='sm' tone='neutral' variant='soft'>
+                                                Current
+                                            </Badge>
+                                        )}
                                     </span>
-                                    <span className='min-w-0'>
-                                        <span className='flex items-center gap-2 text-sm font-bold'>
-                                            {p.label}
-                                            {installed?.software === p.id && (
-                                                <Badge size='sm' tone='neutral' variant='soft'>
-                                                    Current
-                                                </Badge>
-                                            )}
-                                        </span>
-                                        <span className='hidden truncate text-xs text-muted-foreground sm:block'>
-                                            {p.blurb}
-                                        </span>
+                                    <span className='hidden truncate text-xs text-muted-foreground sm:block'>
+                                        {p.blurb}
                                     </span>
-                                </button>
-                            );
-                        })}
+                                </span>
+                            </button>
+                        ))}
                     </div>
                     <div className='mt-7'>
                         <Step n={2}>Version</Step>
