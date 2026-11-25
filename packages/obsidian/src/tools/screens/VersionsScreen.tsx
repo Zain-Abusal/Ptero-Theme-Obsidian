@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Box, Coffee, Cpu, Feather, Network, Scroll, Send, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Box, Coffee, Cpu, Feather, Hammer, Network, Scroll, Send, TriangleAlert } from 'lucide-react';
 import {
     Badge,
     Button,
@@ -14,17 +14,47 @@ import {
     type SdkServerStartup,
 } from '@pterodactyl/sdk';
 import { MARKER, softwareLabel, type Installed } from '../lib/minecraft';
-import { jarOf, providers, providerById, type Provider } from '../lib/software';
+import { jarOf, providers, providerById, type Provider, type VersionFamily } from '../lib/software';
+import {
+    LOADER_CLEANUP,
+    STARTER_URL,
+    installerFor,
+    loaderBuilds,
+    type LoaderBuild,
+    type ModLoader,
+} from '../../mc/loaders';
 import { useToolkit } from '../lib/useToolkit';
 import Page, { Eyebrow, Panel, Step, attempt } from '../ui/Page';
 
-const icons: Record<Provider['id'], typeof Box> = {
+type SoftwareId = Provider['id'] | ModLoader;
+
+const icons: Record<SoftwareId, typeof Box> = {
     paper: Send,
     purpur: Box,
     folia: Feather,
     vanilla: Scroll,
     fabric: Cpu,
     velocity: Network,
+    forge: Hammer,
+    neoforge: Hammer,
+};
+
+const loaderProviders: { id: ModLoader; label: string; blurb: string }[] = [
+    { id: 'forge', label: 'Forge', blurb: 'The classic mod loader for Minecraft 1.17 and newer.' },
+    { id: 'neoforge', label: 'NeoForge', blurb: 'A modern mod loader for Minecraft 1.17 and newer.' },
+];
+
+const isLoader = (value: SoftwareId): value is ModLoader => value === 'forge' || value === 'neoforge';
+
+const groupLoaderBuilds = (builds: readonly LoaderBuild[]) => {
+    const groups = new Map<string, string[]>();
+    for (const build of builds) {
+        const family = build.minecraft.startsWith('1.')
+            ? build.minecraft.split('.').slice(0, 2).join('.')
+            : build.minecraft;
+        groups.set(family, [...(groups.get(family) ?? []), build.minecraft]);
+    }
+    return [...groups.entries()].map(([name, versions]) => ({ name, versions }));
 };
 
 function useRunState(uuid: string) {
@@ -124,47 +154,81 @@ export default function VersionsScreen() {
     const { data: startup } = useServerStartup(id);
     const running = useRunState(server.attributes.uuid);
     const jar = jarOf(startup);
-    const [software, setSoftware] = useState<Provider['id']>('paper');
+    const [software, setSoftware] = useState<SoftwareId>('paper');
     const [version, setVersion] = useState<string | null>(null);
     const [showAll, setShowAll] = useState(false);
     const [keepOld, setKeepOld] = useState(true);
     const [eula, setEula] = useState(true);
     const [step, setStep] = useState<string | null>(null);
-    const provider = providerById(software)!;
+    const loader = isLoader(software);
+    const provider = providerById(software);
+    const loaderProvider = loaderProviders.find((item) => item.id === software);
+    const providerLabel = loaderProvider?.label ?? provider?.label ?? 'Paper';
 
     useEffect(() => {
-        if (installed && providerById(installed.software)) setSoftware(installed.software as Provider['id']);
+        if (installed && (providerById(installed.software) || isLoader(installed.software as SoftwareId)))
+            setSoftware(installed.software as SoftwareId);
     }, [installed]);
 
-    const versions = useQuery({
+    const versions = useQuery<LoaderBuild[] | VersionFamily[]>({
         queryKey: ['obsidian-mc', 'versions', software],
-        queryFn: () => provider.versions(),
+        queryFn: () => {
+            if (isLoader(software)) return loaderBuilds(software);
+            return providerById(software)!.versions();
+        },
         staleTime: 10 * 60_000,
     });
 
-    useEffect(() => setVersion(versions.data?.[0]?.versions[0] ?? null), [versions.data]);
+    const builds = loader && Array.isArray(versions.data) ? (versions.data as LoaderBuild[]) : [];
+    const families = loader
+        ? groupLoaderBuilds(builds)
+        : ((versions.data as { name: string; versions: string[] }[] | undefined) ?? []);
+    const selectedBuild = builds.find((build) => build.minecraft === version);
 
-    const families = versions.data ?? [];
+    useEffect(() => setVersion(families[0]?.versions[0] ?? null), [versions.data, loader]);
+
     const shown = showAll ? families : families.slice(0, 4);
     const isCurrent = (v: string) => installed?.software === software && installed.version === v;
 
     const install = async () => {
         if (!version) return;
+        if (loader && !selectedBuild) return;
         try {
-            setStep('Finding the newest build…');
-            const download = await provider.resolve(version);
+            setStep(loader ? 'Preparing the loader install…' : 'Finding the newest build…');
+            const download = loader ? null : await provider!.resolve(version);
             const root = await api.listOrEmpty('/');
-            if (keepOld && root.some((e) => e.name === jar)) {
-                setStep(`Keeping the old jar as ${jar}.bak…`);
-                await api.remove('/', [`${jar}.bak`]).catch(() => undefined);
-                await api.rename('/', jar, `${jar}.bak`);
-            } else if (root.some((e) => e.name === jar)) {
-                await api.remove('/', [jar]);
+            const targets = [...new Set(loader ? [jar, 'server.jar'] : [jar])];
+            for (const target of targets) {
+                if (!root.some((entry) => entry.name === target)) continue;
+                if (keepOld) {
+                    setStep(`Keeping ${target} as ${target}.bak…`);
+                    await api.remove('/', [`${target}.bak`]).catch(() => undefined);
+                    await api.rename('/', target, `${target}.bak`);
+                } else {
+                    await api.remove('/', [target]);
+                }
             }
-            setStep(`Downloading ${download.filename}…`);
-            await api.install(download.url, '/', jar, { maxMb: server.attributes.upload_size });
+            if (loader && selectedBuild) {
+                const stale = root
+                    .filter(
+                        (entry) =>
+                            entry.isFile &&
+                            (/-installer\.jar$/i.test(entry.name) || LOADER_CLEANUP.includes(entry.name))
+                    )
+                    .map((entry) => entry.name);
+                if (stale.length) await api.remove('/', stale);
+                const installer = installerFor(software as ModLoader, selectedBuild);
+                setStep('Downloading the server starter…');
+                await api.install(STARTER_URL, '/', 'server.jar', { maxMb: server.attributes.upload_size });
+                setStep(`Downloading ${installer.filename}…`);
+                await api.install(installer.url, '/', installer.filename, { maxMb: server.attributes.upload_size });
+                await api.setVariable('SERVER_JARFILE', 'server.jar');
+            } else if (download) {
+                setStep(`Downloading ${download.filename}…`);
+                await api.install(download.url, '/', jar, { maxMb: server.attributes.upload_size });
+            }
             if (eula) await api.write('/eula.txt', 'eula=true\n');
-            const marker: Installed = { software, version, build: download.build };
+            const marker: Installed = { software, version, build: selectedBuild?.loader ?? download?.build ?? null };
             await api.write(
                 `/${MARKER}`,
                 JSON.stringify({ ...marker, installedAt: new Date().toISOString() }, null, 2)
@@ -172,7 +236,7 @@ export default function VersionsScreen() {
 
             await api.setVariable('MINECRAFT_VERSION', version).catch(() => undefined);
             toast.success(
-                `${provider.label} ${version} installed. ${running === 'offline' ? 'Start' : 'Restart'} the server to use it.`
+                `${providerLabel} ${version} installed. ${running === 'offline' ? 'Start' : 'Restart'} the server to use it.`
             );
             void refresh();
         } catch (error) {
@@ -183,13 +247,13 @@ export default function VersionsScreen() {
     };
 
     return (
-        <Page title='Versions' description='Switch to Paper, Purpur, Fabric and more, on any Minecraft version.'>
+        <Page title='Versions' description='Switch to Paper, Purpur, Fabric, Forge, NeoForge and more.'>
             <Current installed={installed} jar={jar} running={running} />
             <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]'>
                 <div className='min-w-0'>
                     <Step n={1}>Software</Step>
                     <div className='grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'>
-                        {providers.map((p) => {
+                        {[...providers, ...loaderProviders].map((p) => {
                             const Glyph = icons[p.id];
                             return (
                                 <button
@@ -228,7 +292,7 @@ export default function VersionsScreen() {
                             {versions.isLoading && <Spinner centered />}
                             {versions.isError && (
                                 <p className='text-sm text-destructive'>
-                                    Could not load {provider.label} versions. {(versions.error as Error).message}
+                                    Could not load {providerLabel} versions. {(versions.error as Error).message}
                                 </p>
                             )}
                             <div className='flex flex-col gap-3'>
@@ -254,7 +318,9 @@ export default function VersionsScreen() {
                                                             : 'border-border hover:bg-muted'
                                                     )}
                                                 >
-                                                    {v}
+                                                    {loader
+                                                        ? `${v} · ${builds.find((build) => build.minecraft === v)?.loader ?? ''}`
+                                                        : v}
                                                     {isCurrent(v) && (
                                                         <span
                                                             className='absolute -top-0.5 -right-0.5 size-2 rounded-full bg-success'
@@ -290,8 +356,10 @@ export default function VersionsScreen() {
                             </div>
                             <ArrowRight className='size-4 text-muted-foreground' aria-hidden />
                             <div className='rounded-lg border border-success/50 bg-success/8 p-3 text-center'>
-                                <p className='truncate text-sm font-bold'>{provider.label}</p>
-                                <p className='font-mono text-xs text-muted-foreground'>{version ?? '…'}</p>
+                                <p className='truncate text-sm font-bold'>{providerLabel}</p>
+                                <p className='font-mono text-xs text-muted-foreground'>
+                                    {selectedBuild ? `${version} · ${selectedBuild.loader}` : (version ?? '…')}
+                                </p>
                             </div>
                         </div>
                         {running !== 'offline' && (
@@ -332,10 +400,13 @@ export default function VersionsScreen() {
                             isLoading={step !== null}
                             onClick={install}
                         >
-                            Install {provider.label} {version ?? ''}
+                            Install {providerLabel} {version ?? ''}
                         </Button>
                         <p className='mt-3 text-xs text-muted-foreground'>
-                            {step ?? 'Always the newest stable build. Downloads go straight to the server.'}
+                            {step ??
+                                (loader
+                                    ? 'The first start runs the loader installer and can take a few minutes.'
+                                    : 'Always the newest stable build. Downloads go straight to the server.')}
                         </p>
                     </Panel>
                     <JavaRuntime startup={startup} image={server.attributes.docker_image} />

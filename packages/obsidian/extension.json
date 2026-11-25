@@ -39,7 +39,8 @@
                     "group": "Minecraft"
                 },
                 "permission": [
-                    "file.create"
+                    "file.create",
+                    "startup.update"
                 ],
                 "when": {
                     "runtime": true
