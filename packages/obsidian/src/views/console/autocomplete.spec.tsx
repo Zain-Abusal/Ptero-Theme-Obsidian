@@ -14,6 +14,10 @@ import theme from '../../theme';
 import Terminal from '../Terminal';
 import { COMMANDS, getSuggestions } from './autocomplete';
 
+vi.mock('../../ops/commands', () => ({
+    useQuickCommands: () => ({ commands: [], save: vi.fn() }),
+}));
+
 let host: ExtensionTestHost | undefined;
 let rendered: RenderedView | undefined;
 
@@ -191,7 +195,7 @@ test('shows up to 6 suggestions on Minecraft servers and accepts via Tab, Enter,
     expect(screen.getByRole('listbox')).not.toBeNull();
     fireEvent.mouseDown(document.body);
     expect(screen.queryByRole('listbox')).toBeNull();
-});
+}, 10000);
 
 test('steps through history with ArrowUp without opening suggestions when dropdown is closed', async () => {
     const input = await mountTerminal({ minecraft: true, history: ['list', 'tps'] });

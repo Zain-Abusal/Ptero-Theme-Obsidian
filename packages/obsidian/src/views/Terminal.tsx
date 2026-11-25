@@ -13,6 +13,7 @@ import { Button, SpinnerOverlay, cn, useCurrentServer } from '@pterodactyl/sdk';
 import type { ServerConsoleCommand, ViewProps } from '@pterodactyl/sdk/theme';
 import { isMinecraft } from '../tools/lib/minecraft';
 import ConsoleTools from './console/ConsoleTools';
+import QuickCommands from '../ops/QuickCommands';
 import { getSuggestions, type Suggestion } from './console/autocomplete';
 
 const MAX_VISIBLE = 6;
@@ -179,6 +180,7 @@ export default function Terminal({ model, className }: ViewProps<'server.termina
                     </button>
                 )}
             </div>
+            {server && <QuickCommands server={server} command={command} />}
             {command.allowed && (
                 <div
                     ref={commandBar}

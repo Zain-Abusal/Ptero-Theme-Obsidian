@@ -133,8 +133,21 @@ export function serverApi(id: string) {
 
 export type ServerApi = ReturnType<typeof serverApi>;
 
-export async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
-    const response = await fetch(url, { ...init, headers: { Accept: 'application/json', ...init?.headers } });
+const isAbortSignal = (value: RequestInit | AbortSignal | undefined): value is AbortSignal =>
+    typeof value === 'object' && value !== null && 'aborted' in value;
+
+export async function getJson<T>(
+    url: string,
+    initOrSignal?: RequestInit | AbortSignal,
+    signal?: AbortSignal
+): Promise<T> {
+    const init = isAbortSignal(initOrSignal) ? undefined : initOrSignal;
+    const resolvedSignal = signal ?? (isAbortSignal(initOrSignal) ? initOrSignal : init?.signal);
+    const response = await fetch(url, {
+        ...init,
+        ...(resolvedSignal ? { signal: resolvedSignal } : {}),
+        headers: { Accept: 'application/json', ...init?.headers },
+    });
     if (!response.ok) throw new Error(`${new URL(url).host} answered ${response.status}.`);
     return (await response.json()) as T;
 }

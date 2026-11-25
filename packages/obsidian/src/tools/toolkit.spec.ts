@@ -4,7 +4,8 @@ import { parseList } from './screens/PlayersScreen';
 import { readVotifierConfig, setVotifierPort } from './screens/VotifierScreen';
 import { fileNameOf } from './screens/ImporterScreen';
 import { looksInstalled } from './lib/sources';
-import { isMinecraft, loadersFor } from './lib/minecraft';
+import { detect, isMinecraft, loadersFor } from './lib/minecraft';
+import type { ServerApi } from './lib/api';
 import { createTestServer } from '@pterodactyl/sdk/testing';
 import theme from '../theme';
 
@@ -93,4 +94,38 @@ test('registers every screen the manifest declares, each with a visibility rule'
     expect(register.mock.calls.map(([id]) => id).sort()).toEqual(manifest.ui.screens.map((s) => s.id).sort());
     expect(manifest.ui.screens.every((s) => s.when?.runtime === true)).toBe(true);
     expect(register.mock.calls.every(([, , options]) => typeof options?.visible === 'function')).toBe(true);
+});
+
+test('detect runs root listing and version history reads in parallel after marker check fails', async () => {
+    let resolveList!: (value: { name: string; size: number; isFile: boolean; modifiedAt: string }[]) => void;
+    let resolveHistory!: (value: string | null) => void;
+    const calls: string[] = [];
+
+    const api = {
+        readOrNull: vi.fn((file: string) => {
+            calls.push(`read:${file}`);
+            if (file === '/version_history.json') {
+                return new Promise<string | null>((resolve) => {
+                    resolveHistory = resolve;
+                });
+            }
+            return Promise.resolve(null);
+        }),
+        listOrEmpty: vi.fn((dir: string) => {
+            calls.push(`list:${dir}`);
+            return new Promise<{ name: string; size: number; isFile: boolean; modifiedAt: string }[]>((resolve) => {
+                resolveList = resolve;
+            });
+        }),
+    } as unknown as ServerApi;
+
+    const pending = detect(api);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(calls).toEqual(['read:/.obsidian-software.json', 'list:/', 'read:/version_history.json']);
+
+    resolveList([{ name: 'purpur.yml', size: 0, isFile: true, modifiedAt: '' }]);
+    resolveHistory(JSON.stringify({ currentVersion: 'git-Purpur-2300 (MC: 1.21.4)' }));
+
+    await expect(pending).resolves.toEqual({ software: 'purpur', version: '1.21.4' });
 });

@@ -17,4 +17,9 @@ export interface ThemeSettings {
     readonly switcherKey: string;
     readonly curseforgeKey: string;
     readonly livePlayers: boolean;
+    readonly bannerEnabled: boolean;
+    readonly bannerText: string;
+    readonly bannerTone: 'info' | 'warning' | 'danger';
+    readonly bannerLink: string;
+    readonly bannerDismissible: boolean;
 }
