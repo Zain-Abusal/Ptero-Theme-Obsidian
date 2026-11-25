@@ -46,6 +46,22 @@
                 }
             },
             {
+                "id": "ports",
+                "area": "server",
+                "path": "mc/ports",
+                "nav": {
+                    "label": "Ports",
+                    "icon": "network",
+                    "group": "Tools"
+                },
+                "permission": [
+                    "allocation.read"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
                 "id": "plugins",
                 "area": "server",
                 "path": "mc/plugins",
