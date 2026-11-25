@@ -21,6 +21,12 @@ The screenshots use sample panel data. They show the desktop dashboard and the l
   <img src="docs/images/dashboard-mobile-light.png" alt="Obsidian dashboard in light mode at phone width" width="32%">
 </p>
 
+The Minecraft toolkit also adapts to a phone screen. This preview shows the Java startup flag presets.
+
+<p align="center">
+  <img src="docs/images/startup-flags-mobile-dark.png" alt="Startup flags page in dark mode at phone width" width="32%">
+</p>
+
 ## Install
 
 1. Download `obsidian-VERSION.pteroext` from the [latest release](https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/releases/latest). Use the version in the downloaded filename.
@@ -68,7 +74,8 @@ Shown only on Minecraft Java servers. Each page needs the subuser permission for
 | Page | Does |
 | --- | --- |
 | Players | Online players, whitelist, operators, bans and everyone who joined; op, kick, ban, whitelist |
-| Versions | Paper, Purpur, Folia, Vanilla, Fabric or Velocity on any version; keeps the old jar; EULA; Java picker |
+| Versions | Paper, Purpur, Folia, Vanilla, Fabric, Forge, NeoForge or Velocity; keeps the old jar; EULA; Java picker |
+| Startup flags | Tested Aikar, ZGC and Shenandoah presets, adjusted for the selected Java version |
 | Plugins | Search Modrinth, Hangar, SpigotMC and CurseForge for the server's loader and version; enable, disable, delete |
 | Mods | Modrinth and CurseForge mods for Fabric, Forge and NeoForge servers |
 | Packs | Modrinth and CurseForge modpacks (Fabric packs install end to end), datapacks, and resource packs as the server pack |
@@ -76,9 +83,14 @@ Shown only on Minecraft Java servers. Each page needs the subuser permission for
 | Properties | `server.properties` in plain words with a MOTD preview, plus form editors for Bukkit, Spigot and Paper configs |
 | Worlds | List, switch, download, back up, reset and pre-generate (Chunky) worlds |
 | Votifier | Installs NuVotifier, picks its port from the server's allocations, copies the key and token |
+| Ports | Configure Votifier, Geyser, BlueMap, Dynmap, query and RCON ports from server allocations |
 | Restarts | Daily or weekly restarts with in-game countdown warnings, on the panel's own schedules |
 | Crash doctor | Reads the latest crash report or log and explains the cause with a fix |
 | Importer | Worlds, datapacks, jars or archives from a link; extracts them and backs up the current world |
+
+The console suggests commands as you type and supports reusable quick commands. An optional announcement or
+maintenance banner can link to a status page. The file editor adapts to phone and desktop widths, with adjustable
+text size and line wrapping saved in the current browser.
 
 Downloads go from the browser straight to the server through the panel's signed upload, which avoids the panel's limit
 of 5 server-side downloads per 10 minutes. Hosts that don't allow browser downloads fall back to the server downloading
@@ -93,6 +105,11 @@ the file itself. Every action goes through the panel's client API, so permission
 | Layout | Corner radius, density, content width, background decoration, sidebar server card |
 | Dashboard | Greeting, totals, switcher key |
 | Integrations | CurseForge API key (turns CurseForge on), live player counts |
+| Banner | Visibility, message, tone, optional link and dismiss behavior |
+
+Users can choose their own surface and light or dark mode. The logo, colours, radius, content width, density and
+decoration are administrator settings. Server groups, colours, icons, notes and quick commands are per-server
+settings. File editor size and wrapping are per-browser preferences.
 
 **What leaves the panel:** live player counts look up each running server's *public* address on mcsrvstat.us. You can
 turn this off. The plugin, mod and version searches call the public Modrinth, Hangar, Spiget, CurseForge, PaperMC,
@@ -131,13 +148,13 @@ scripts/pack.mjs          builds the .pteroext (mirrors p:extension:pack)
 ### Adding a page
 
 1. Add it to `ui.screens` in `extension.json` (path under `mc/`, a `nav.group`, the permissions it needs).
-2. Create `src/tools/screens/<Name>Screen.tsx` and add it to `SCREENS` in `src/theme.tsx`.
+2. Create `src/tools/screens/<Name>Screen.tsx`; the manifest registration discovers it automatically.
 3. Add tests next to it and open a pull request. CI typechecks, tests, builds and packs it, and attaches the
    `.pteroext` to the run so you can install and try it before merging.
 
 ### Releasing
 
-Bump `version` in `packages/obsidian/extension.json` and `package.json`, then push a matching tag (`v1.2.0`). The
+Bump `version` in `packages/obsidian/extension.json` and `packages/obsidian/package.json`, then push a matching tag (`v1.3.0`). The
 Release workflow builds the `.pteroext` and attaches it to a GitHub release as a plain file.
 
 Fonts: Geist, Geist Mono and Instrument Serif (SIL Open Font License), bundled with the theme.

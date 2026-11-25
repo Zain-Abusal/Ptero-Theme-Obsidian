@@ -468,6 +468,29 @@ html.obs-scheme-switching .obs-topbar {
     view-transition-name: none;
 }
 
+.obs-file-editor-canvas .cm-editor {
+    min-height: min(68vh, 48rem);
+    max-height: 72vh;
+    overflow: auto;
+    border-radius: var(--radius-md);
+    font-size: var(--obs-editor-font, 14px);
+}
+
+.obs-file-editor-canvas .cm-scroller {
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.obs-file-editor[data-wrap='true'] .obs-file-editor-canvas .cm-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.obs-file-editor[data-wrap='true'] .obs-file-editor-canvas .cm-line {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 .obs-indicator {
     position: absolute;
     left: 0;

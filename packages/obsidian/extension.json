@@ -3,8 +3,8 @@
     "id": "obsidian",
     "type": "theme",
     "name": "Obsidian",
-    "version": "1.2.0",
-    "description": "A premium theme with built-in Minecraft tools: grouped sidebar, server switcher, stats dashboard and console, plus players, versions, plugins, mods, kits, properties, Votifier and an importer. Every colour, the logo and the layout are editable from Admin > Themes.",
+    "version": "1.3.0",
+    "description": "A configurable Pterodactyl theme with a Minecraft toolkit, console autocomplete, startup flag presets, port tools, and responsive file editing.",
     "icon": "gem",
     "requires": {
         "panel": "^2.0.0-dev",
