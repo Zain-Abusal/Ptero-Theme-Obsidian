@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Coffee, Hammer, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Coffee, TriangleAlert } from 'lucide-react';
 import {
     Badge,
     Button,
@@ -257,11 +257,7 @@ export default function VersionsScreen() {
                                     )}
                                 >
                                     <span className='grid size-10 shrink-0 place-items-center rounded-lg border border-border bg-background'>
-                                        {loaderOption ? (
-                                            <Hammer className='size-4' aria-hidden />
-                                        ) : (
-                                            <SoftwareLogo software={p.id} className='size-4' />
-                                        )}
+                                        <SoftwareLogo software={p.id} className='size-4' />
                                     </span>
                                     <span className='min-w-0'>
                                         <span className='flex items-center gap-2 text-sm font-bold'>

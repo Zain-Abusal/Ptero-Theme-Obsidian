@@ -41,7 +41,7 @@ const PRESET_ICONS: Record<PresetId, typeof Sparkles> = {
     vanilla: Terminal,
 };
 
-export default function FlagsScreen() {
+export default function FlagsScreen({ embedded = false }: { embedded?: boolean }) {
     const { server, id, api } = useToolkit();
     const startupQuery = useServerStartup(id);
     const startup = startupQuery.data;
@@ -52,6 +52,7 @@ export default function FlagsScreen() {
     const baseMemoryMb = limitMb > 0 ? limitMb : normalizeMemoryMb(customMemory);
 
     const [selected, setSelected] = useState<PresetId>('aikar');
+    const [customFlags, setCustomFlags] = useState('');
     const [reserveHeadroom, setReserveHeadroom] = useState(false);
     const [includeMemory, setIncludeMemory] = useState(true);
     const [showCommand, setShowCommand] = useState(false);
@@ -82,11 +83,12 @@ export default function FlagsScreen() {
     const heapMb = reserveHeadroom ? headroomMemoryMb(baseMemoryMb) : normalizeMemoryMb(baseMemoryMb);
     const rawFlags = preset.generate(heapMb);
     const generatedFlags = includeMemory ? rawFlags : stripMemoryFlags(rawFlags);
+    useEffect(() => setCustomFlags(generatedFlags), [generatedFlags]);
     const hasCommandMemory = startupHasMemoryFlags(startup, currentVar?.key);
     const commandPreview = currentVar
-        ? previewStartupCommand(startup, currentVar.key, generatedFlags, baseMemoryMb)
+        ? previewStartupCommand(startup, currentVar.key, customFlags, baseMemoryMb)
         : null;
-    const isUnchanged = editableVar !== null && editableVar.value.trim() === generatedFlags.trim();
+    const isUnchanged = editableVar !== null && editableVar.value.trim() === customFlags.trim();
 
     const copy = async (text: string) => {
         if (!navigator.clipboard) {
@@ -106,18 +108,15 @@ export default function FlagsScreen() {
         if (!editableVar) return;
         setSaving(true);
         await attempt(
-            () => api.setVariable(editableVar.key, generatedFlags),
+            () => api.setVariable(editableVar.key, customFlags),
             `Applied ${preset.label} to ${editableVar.key}. Restart the server to use them.`,
             toast
         );
         setSaving(false);
     };
 
-    return (
-        <Page
-            title='Startup flags'
-            description="Generate JVM flags scaled to this server's memory and apply them to your startup variable."
-        >
+    const content = (
+        <>
             <div className='rounded-xl border border-border bg-card p-5'>
                 <div className='flex items-start gap-3.5 sm:items-center sm:gap-4'>
                     <span className='grid size-12 shrink-0 place-items-center rounded-xl border border-border bg-muted sm:size-14'>
@@ -243,7 +242,7 @@ export default function FlagsScreen() {
                         <Panel
                             title={preset.label}
                             aside={
-                                <Button size='xsmall' color='grey' onClick={() => void copy(generatedFlags)}>
+                                <Button size='xsmall' color='grey' onClick={() => void copy(customFlags)}>
                                     {copied ? (
                                         <Check className='size-3.5 text-success' aria-hidden />
                                     ) : (
@@ -254,13 +253,13 @@ export default function FlagsScreen() {
                             }
                         >
                             <TextArea
-                                readOnly
                                 rows={6}
-                                aria-label='Generated JVM flags'
-                                value={generatedFlags}
-                                onFocus={(e) => e.currentTarget.select()}
+                                aria-label='Editable JVM flags'
+                                value={customFlags}
+                                onChange={(e) => setCustomFlags(e.currentTarget.value)}
                                 className='w-full resize-y px-3 py-2.5 font-mono text-xs leading-relaxed'
                             />
+                            <p className='mt-2 text-xs text-muted-foreground'>Edit these flags before applying them.</p>
                             <div className='mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground'>
                                 <span>
                                     {includeMemory
@@ -399,7 +398,7 @@ export default function FlagsScreen() {
                                             size='xlarge'
                                             color='grey'
                                             className='mt-3'
-                                            onClick={() => void copy(generatedFlags)}
+                                            onClick={() => void copy(customFlags)}
                                         >
                                             {copied ? (
                                                 <Check className='size-4 text-success' aria-hidden />
@@ -429,9 +428,9 @@ export default function FlagsScreen() {
                                         )}
                                     </Alert>
                                     <pre className='mt-3 max-h-40 overflow-y-auto rounded-lg border border-border bg-sunken p-3 font-mono text-[0.72rem] leading-relaxed break-all whitespace-pre-wrap text-foreground'>
-                                        {generatedFlags}
+                                        {customFlags}
                                     </pre>
-                                    <Button size='xlarge' className='mt-3' onClick={() => void copy(generatedFlags)}>
+                                    <Button size='xlarge' className='mt-3' onClick={() => void copy(customFlags)}>
                                         {copied ? (
                                             <Check className='size-4' aria-hidden />
                                         ) : (
@@ -445,6 +444,17 @@ export default function FlagsScreen() {
                     </Panel>
                 </div>
             </div>
+        </>
+    );
+    return embedded ? (
+        <div className='mt-8 border-t border-border pt-8'>
+            <h2 className='text-xl font-bold tracking-tight'>JVM flags</h2>
+            <p className='mb-5 mt-1 text-sm text-muted-foreground'>Choose a preset, edit its flags, then apply them.</p>
+            {content}
+        </div>
+    ) : (
+        <Page title='Startup' description='Choose a preset, edit the flags, then apply them to the startup variable.'>
+            {content}
         </Page>
     );
 }

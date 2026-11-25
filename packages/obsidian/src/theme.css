@@ -328,7 +328,7 @@
     inset: 0;
     background-image: radial-gradient(var(--obs-decor-ink) 1px, transparent 1px);
     background-size: 22px 22px;
-    mask-image: linear-gradient(to bottom, black, transparent 22rem);
+    mask-image: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.88) 18rem, rgb(0 0 0 / 0.4) 34rem, transparent 48rem);
 }
 
 .obs-decor-rings {

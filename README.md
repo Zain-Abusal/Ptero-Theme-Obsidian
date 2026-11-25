@@ -1,159 +1,117 @@
-# Obsidian for Pterodactyl v2
+# Obsidian for Pterodactyl
 
-A configurable theme for **Pterodactyl Panel v2**, built with the panel's native theme and extension system. It adds a
-Minecraft server toolkit alongside the dashboard, console and account pages. One package, no Blueprint.
+Obsidian is a theme and Minecraft server toolkit for Pterodactyl Panel v2. It uses the panel's native theme and extension APIs.
 
-<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/actions/workflows/ci.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/ci/Zain-Abusal/Ptero-Theme-Obsidian.svg?workflow=ci.yml&amp;branch=main&amp;mode=dark"><img alt="CI status" src="https://shieldcn.dev/github/ci/Zain-Abusal/Ptero-Theme-Obsidian.svg?workflow=ci.yml&amp;branch=main&amp;mode=light"></picture></a>
-<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/release/Zain-Abusal/Ptero-Theme-Obsidian/stable.svg?mode=dark"><img alt="Latest stable release" src="https://shieldcn.dev/github/release/Zain-Abusal/Ptero-Theme-Obsidian/stable.svg?mode=light"></picture></a>
-<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/stargazers"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/stars/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="GitHub stars" src="https://shieldcn.dev/github/stars/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
-<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/open-issues/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="Open issues" src="https://shieldcn.dev/github/open-issues/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
-<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/open-prs/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="Open pull requests" src="https://shieldcn.dev/github/open-prs/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
+<p>
+  <a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/actions/workflows/ci.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/ci/Zain-Abusal/Ptero-Theme-Obsidian.svg?workflow=ci.yml&amp;branch=main&amp;mode=dark"><img alt="CI status" src="https://shieldcn.dev/github/ci/Zain-Abusal/Ptero-Theme-Obsidian.svg?workflow=ci.yml&amp;branch=main&amp;mode=light"></picture></a>
+  <a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/release/Zain-Abusal/Ptero-Theme-Obsidian/stable.svg?mode=dark"><img alt="Latest release" src="https://shieldcn.dev/github/release/Zain-Abusal/Ptero-Theme-Obsidian/stable.svg?mode=light"></picture></a>
+  <a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/stargazers"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/stars/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="GitHub stars" src="https://shieldcn.dev/github/stars/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
+  <a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/open-issues/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="Open issues" src="https://shieldcn.dev/github/open-issues/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
+  <a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/open-prs/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="Open pull requests" src="https://shieldcn.dev/github/open-prs/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
+</p>
 
 ## Preview
 
-The screenshots use sample panel data. They show the desktop dashboard and the light theme at phone width.
+These previews use sample server data. Select any image to open it at full size.
+
+### Dashboard · desktop · dark mode
 
 <p align="center">
-  <img src="docs/images/dashboard-dark.png" alt="Obsidian dashboard in dark mode" width="100%">
+  <a href="docs/images/dashboard-dark.png"><img src="docs/images/dashboard-dark.png" alt="Obsidian dashboard with server status and resource summaries in dark mode" width="100%"></a>
 </p>
+
+### Software selector · desktop · light mode
+
 <p align="center">
-  <img src="docs/images/dashboard-mobile-light.png" alt="Obsidian dashboard in light mode at phone width" width="32%">
+  <a href="docs/images/versions-light.png"><img src="docs/images/versions-light.png" alt="Minecraft software selector with project logos in light mode" width="100%"></a>
 </p>
 
-The Minecraft toolkit also adapts to a phone screen. This preview shows the Java startup flag presets.
+### JVM flags · phone · dark mode
 
 <p align="center">
-  <img src="docs/images/startup-flags-mobile-dark.png" alt="Startup flags page in dark mode at phone width" width="32%">
+  <a href="docs/images/startup-mobile-dark.png"><img src="docs/images/startup-mobile-dark.png" alt="Editable Minecraft JVM flag presets and startup controls on a phone" width="390"></a>
 </p>
 
 ## Install
 
-1. Download `obsidian-VERSION.pteroext` from the [latest release](https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/releases/latest). Use the version in the downloaded filename.
-2. Upload it on **Admin > Themes**, or from the panel's directory:
+1. Download the `.pteroext` file from [Releases](https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/releases/latest).
+2. Upload it under **Admin > Themes**, or run:
 
    ```sh
    php artisan p:extension:install obsidian-VERSION.pteroext --enable
    php artisan p:theme:activate obsidian
    ```
 
-3. Reload the browser.
+To preview the theme for your account only, choose **Preview for me** under Admin > Themes. To upgrade, install the new file with `--replace`.
 
-To try it without switching everyone, skip `p:theme:activate` and choose **Preview for me** on Admin > Themes.
-`php artisan p:theme:activate classic` switches back. To upgrade, install the new file with `--replace`.
+## Features
 
-> The Minecraft pages ship inside the theme, so they exist while Obsidian is the active theme.
+### Panel
 
-## The look
+- Sidebar navigation grouped by area, a server switcher, Quickcast search, and a dashboard with filters and resource summaries.
+- Console search, history, warning and error filters, command suggestions, saved quick commands, and copy or download actions.
+- Dark and light schemes with eight surfaces. Users can choose a surface and color scheme.
+- Per-server groups, colors, icons, notes, and quick commands.
+- Optional announcement or maintenance banner.
+- Responsive file editor with adjustable text size and line wrapping.
 
-- **Sidebar shell** with grouped server navigation (Basic, Minecraft, Tools, Configuration), a server card with live
-  status, players and power buttons, and a highlight that slides between pages.
-- **Server switcher** (press `S`, or `[` / `]` to step through servers) with a live preview, pins, groups and colours.
-- **Quickcast** search (`Ctrl/⌘ + /`) for servers and pages.
-- **Dashboard** with a greeting, totals (servers, online, players now, memory), filters, collapsible groups and ring
-  gauges per server.
-- **Console** in a framed card with search, warning/error filters, history, copy, download, share and pop-out.
-- **Surfaces:** Graphite, Midnight, Nord, Forest, Ember, Rosé, Amethyst and OLED. Each is a complete look in both dark
-  and light. Users pick theirs from the sidebar; admins set the default.
-- **Smooth everything:** a circular reveal when switching dark and light, a still sidebar while pages fade in, and hover
-  lifts. All of it is compositor-only and turns off with the system's "reduce motion".
+### Minecraft tools
 
-### Server customization
-
-Every server gets a **group, colour, icon and note** (paintbrush button on its row or in the sidebar card). Servers
-without a `server-icon.png` get a template icon tinted to match the theme. Pick another glyph, or upload an image,
-which becomes the server's real 64×64 `server-icon.png`.
-
-This is saved in the server's own `.obsidian.json`, so everyone with access sees the same thing on every device. Users
-without file access see the defaults.
-
-## Minecraft tools
-
-Shown only on Minecraft Java servers. Each page needs the subuser permission for what it does.
-
-| Page | Does |
+| Page | Includes |
 | --- | --- |
-| Players | Online players, whitelist, operators, bans and everyone who joined; op, kick, ban, whitelist |
-| Versions | Paper, Purpur, Folia, Vanilla, Fabric, Forge, NeoForge or Velocity; keeps the old jar; EULA; Java picker |
-| Startup flags | Tested Aikar, ZGC and Shenandoah presets, adjusted for the selected Java version |
-| Plugins | Search Modrinth, Hangar, SpigotMC and CurseForge for the server's loader and version; enable, disable, delete |
-| Mods | Modrinth and CurseForge mods for Fabric, Forge and NeoForge servers |
-| Packs | Modrinth and CurseForge modpacks (Fabric packs install end to end), datapacks, and resource packs as the server pack |
-| Kits | Six plugin bundles; plugins already installed are skipped |
-| Properties | `server.properties` in plain words with a MOTD preview, plus form editors for Bukkit, Spigot and Paper configs |
-| Worlds | List, switch, download, back up, reset and pre-generate (Chunky) worlds |
-| Votifier | Installs NuVotifier, picks its port from the server's allocations, copies the key and token |
-| Ports | Configure Votifier, Geyser, BlueMap, Dynmap, query and RCON ports from server allocations |
-| Restarts | Daily or weekly restarts with in-game countdown warnings, on the panel's own schedules |
-| Crash doctor | Reads the latest crash report or log and explains the cause with a fix |
-| Importer | Worlds, datapacks, jars or archives from a link; extracts them and backs up the current world |
+| Players | Online list, whitelist, operators, bans, kicks, and player history |
+| Versions | Paper, Purpur, Folia, Vanilla, Fabric, Forge, NeoForge, and Velocity installs |
+| Startup | Editable egg variables, Docker image, startup command, and editable JVM flag presets |
+| Plugins and mods | Search Modrinth, Hangar, SpigotMC, and CurseForge; install and manage results |
+| Packs | Modpacks, datapacks, and resource packs |
+| Kits | Install curated plugin bundles and skip plugins already present |
+| Properties | `server.properties`, MOTD preview, and Bukkit, Spigot, and Paper YAML editors |
+| Worlds | Switch, download, back up, reset, and pre-generate worlds |
+| Votifier | Install NuVotifier, select an assigned port, and copy the public key or token |
+| Restarts | Schedule daily or weekly restarts with in-game warnings |
+| Crash doctor | Analyze the latest crash report or log and show possible fixes |
+| Importer | Import worlds, datapacks, jars, and archives from a URL |
 
-The console suggests commands as you type and supports reusable quick commands. An optional announcement or
-maintenance banner can link to a status page. The file editor adapts to phone and desktop widths, with adjustable
-text size and line wrapping saved in the current browser.
+Use Pterodactyl's **Network** page to assign and manage allocations. Obsidian does not add a second allocation manager.
+The Votifier page can select one of those allocations for the plugin.
 
-Downloads go from the browser straight to the server through the panel's signed upload, which avoids the panel's limit
-of 5 server-side downloads per 10 minutes. Hosts that don't allow browser downloads fall back to the server downloading
-the file itself. Every action goes through the panel's client API, so permissions apply as usual.
+Minecraft pages are shown on Minecraft Java servers. Each action uses the panel API and the signed file upload where supported, so panel permissions still apply.
 
-## Settings (Admin > Themes > Obsidian)
+## Settings
 
-| Tab | Settings |
+Administrators configure Obsidian under **Admin > Themes > Obsidian**.
+
+| Tab | Options |
 | --- | --- |
 | Branding | Logo, brand name, sign-in tagline, footer text |
-| Colours | Primary colour, text on primary, online colour, default surface |
+| Colours | Primary color, primary text, online color, default surface |
 | Layout | Corner radius, density, content width, background decoration, sidebar server card |
-| Dashboard | Greeting, totals, switcher key |
-| Integrations | CurseForge API key (turns CurseForge on), live player counts |
-| Banner | Visibility, message, tone, optional link and dismiss behavior |
+| Dashboard | Greeting, totals, server switcher key |
+| Integrations | CurseForge API key, live player counts |
+| Banner | Visibility, message, style, link, and whether users can dismiss it |
 
-Users can choose their own surface and light or dark mode. The logo, colours, radius, content width, density and
-decoration are administrator settings. Server groups, colours, icons, notes and quick commands are per-server
-settings. File editor size and wrapping are per-browser preferences.
+The CurseForge key is available to signed-in users of the panel. Use a key created for this panel. Live player counts send each running server's public address to mcsrvstat.us. Plugin searches use the configured project APIs. Console logs are sent to mclo.gs only when someone chooses Share or Deep analysis.
 
-**What leaves the panel:** live player counts look up each running server's *public* address on mcsrvstat.us. You can
-turn this off. The plugin, mod and version searches call the public Modrinth, Hangar, Spiget, CurseForge, PaperMC,
-Purpur, Mojang and Fabric APIs. Logs go to mclo.gs only when someone presses Share or Deep analysis. Theme settings reach
-every signed-in user's browser, so use a CurseForge key made only for this panel.
+## Project logos
+
+Software marks are bundled from their project sites and shown as supplied. See [logo sources and usage notes](docs/software-logos.md).
 
 ## Develop
+
+The panel SDK workspace is required to build the theme:
 
 ```sh
 git clone --depth 1 --branch v2.0.0-beta.3 https://github.com/pterodactyl/panel.git panel
 (cd panel && npm ci && npm run sdk:generate && npm run sdk:testing)
 npm ci
-npm run release        # typecheck, test, build, then pack into release/themes/
+npm run release
 ```
 
-- `npm run typecheck`, `npm test` and `npm run build` cover the whole workspace.
-- With PHP and a dev panel, `php artisan p:extension:dev packages/obsidian --enable --watch` rebuilds and reloads on
-  every change.
-- `PREVIEW=/tmp/preview npx vitest run src/preview.spec.tsx` (in `packages/obsidian`) writes static pages of the main
-  views for screenshots.
+`npm run release` checks formatting, types, and tests, then builds and packs `release/themes/obsidian-VERSION.pteroext`.
+With a local panel, run `php artisan p:extension:dev packages/obsidian --enable --watch` to rebuild on changes.
 
-### Layout
+To add a Minecraft page, add its route and permissions to `packages/obsidian/extension.json`, then create a matching `src/tools/screens/<Name>Screen.tsx`. The theme registers screens from the manifest.
 
-```
-packages/obsidian/
-  extension.json          manifest: settings, screens
-  src/theme.tsx           entry: skins, views, screen registration
-  src/theme.css           tokens, surfaces, motion
-  src/skins.ts            restyled panel primitives
-  src/views/              shell, dashboard, console, account, sign-in
-  src/lib/                settings, server meta, icons, players, surfaces
-  src/tools/              Minecraft pages (screens/, lib/, ui/)
-scripts/pack.mjs          builds the .pteroext (mirrors p:extension:pack)
-```
+## Release
 
-### Adding a page
-
-1. Add it to `ui.screens` in `extension.json` (path under `mc/`, a `nav.group`, the permissions it needs).
-2. Create `src/tools/screens/<Name>Screen.tsx`; the manifest registration discovers it automatically.
-3. Add tests next to it and open a pull request. CI typechecks, tests, builds and packs it, and attaches the
-   `.pteroext` to the run so you can install and try it before merging.
-
-### Releasing
-
-Bump `version` in `packages/obsidian/extension.json` and `packages/obsidian/package.json`, then push a matching tag (`v1.3.0`). The
-Release workflow builds the `.pteroext` and attaches it to a GitHub release as a plain file.
-
-Fonts: Geist, Geist Mono and Instrument Serif (SIL Open Font License), bundled with the theme.
+Update the version in `packages/obsidian/extension.json` and `packages/obsidian/package.json`, then push a matching tag such as `v1.3.0`. The release workflow builds and uploads the `.pteroext` file.
