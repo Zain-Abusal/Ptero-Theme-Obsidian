@@ -3,12 +3,11 @@
 A configurable theme for **Pterodactyl Panel v2**, built with the panel's native theme and extension system. It adds a
 Minecraft server toolkit alongside the dashboard, console and account pages. One package, no Blueprint.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/Zain-Abusal/Ptero-Theme-Obsidian/ci.yml?label=CI)](https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/Zain-Abusal/Ptero-Theme-Obsidian?label=latest%20release)](https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/releases/latest)
-[![GitHub stars](https://img.shields.io/github/stars/Zain-Abusal/Ptero-Theme-Obsidian?style=flat)](https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/stargazers)
-![Open issues](https://img.shields.io/github/issues/Zain-Abusal/Ptero-Theme-Obsidian)
-![Open pull requests](https://img.shields.io/github/issues-pr/Zain-Abusal/Ptero-Theme-Obsidian)
-![Panel](https://img.shields.io/badge/Pterodactyl-v2.0.0--beta.3-5865f2)
+<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/actions/workflows/ci.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/ci/Zain-Abusal/Ptero-Theme-Obsidian.svg?workflow=ci.yml&amp;branch=main&amp;mode=dark"><img alt="CI status" src="https://shieldcn.dev/github/ci/Zain-Abusal/Ptero-Theme-Obsidian.svg?workflow=ci.yml&amp;branch=main&amp;mode=light"></picture></a>
+<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/release/Zain-Abusal/Ptero-Theme-Obsidian/stable.svg?mode=dark"><img alt="Latest stable release" src="https://shieldcn.dev/github/release/Zain-Abusal/Ptero-Theme-Obsidian/stable.svg?mode=light"></picture></a>
+<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/stargazers"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/stars/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="GitHub stars" src="https://shieldcn.dev/github/stars/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
+<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/open-issues/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="Open issues" src="https://shieldcn.dev/github/open-issues/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
+<a href="https://github.com/Zain-Abusal/Ptero-Theme-Obsidian/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/open-prs/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=dark"><img alt="Open pull requests" src="https://shieldcn.dev/github/open-prs/Zain-Abusal/Ptero-Theme-Obsidian.svg?mode=light"></picture></a>
 
 ## Preview
 
