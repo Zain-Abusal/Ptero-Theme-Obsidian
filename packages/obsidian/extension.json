@@ -366,6 +366,42 @@
                 "help": "Shows players online on the dashboard and in the sidebar, looked up through the public mcsrvstat.us service by each server's public address.",
                 "tab": "Integrations",
                 "default": true
+            },
+            "bannerEnabled": {
+                "type": "toggle",
+                "label": "Show the banner",
+                "help": "A slim message above every page, for announcements or maintenance.",
+                "tab": "Banner",
+                "default": false
+            },
+            "bannerText": {
+                "type": "text",
+                "label": "Banner message",
+                "tab": "Banner",
+                "default": "",
+                "maxLength": 255
+            },
+            "bannerTone": {
+                "type": "select",
+                "label": "Banner style",
+                "tab": "Banner",
+                "options": { "info": "Info", "warning": "Warning", "danger": "Maintenance" },
+                "default": "info"
+            },
+            "bannerLink": {
+                "type": "text",
+                "label": "Banner link",
+                "help": "Optional. A URL the banner links to, such as a status page or announcement.",
+                "tab": "Banner",
+                "default": "",
+                "maxLength": 255
+            },
+            "bannerDismissible": {
+                "type": "toggle",
+                "label": "Users can dismiss it",
+                "help": "Dismissed banners come back when the message changes.",
+                "tab": "Banner",
+                "default": true
             }
         }
     }

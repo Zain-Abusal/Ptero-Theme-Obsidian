@@ -59,6 +59,51 @@ import { usePlayerCount } from '../lib/players';
 
 const CustomizeServer = lazy(() => import('./CustomizeServer'));
 
+function Announcement() {
+    const settings = useObsidian();
+    const [dismissed, setDismissed] = useStored<string>('banner-dismissed', '');
+    const message = settings.bannerText.trim();
+    let link: string | null = null;
+    try {
+        const url = new URL(settings.bannerLink);
+        if (url.protocol === 'http:' || url.protocol === 'https:') link = url.href;
+    } catch {}
+
+    if (!settings.bannerEnabled || !message || (settings.bannerDismissible && dismissed === message)) return null;
+
+    const tone = {
+        info: 'border-primary/20 bg-primary/8 text-foreground',
+        warning: 'border-warning/30 bg-warning/10 text-warning',
+        danger: 'border-destructive/30 bg-destructive/10 text-destructive',
+    }[settings.bannerTone];
+
+    return (
+        <div
+            role={settings.bannerTone === 'info' ? 'status' : 'alert'}
+            className={cn('flex items-center justify-between gap-3 border-b px-4 py-3 text-sm sm:px-6 lg:px-8', tone)}
+        >
+            <p className='min-w-0 flex-1'>
+                {message}
+                {link && (
+                    <a href={link} target='_blank' rel='noopener noreferrer' className='ml-2 font-semibold underline'>
+                        Details
+                    </a>
+                )}
+            </p>
+            {settings.bannerDismissible && (
+                <button
+                    type='button'
+                    aria-label='Dismiss announcement'
+                    onClick={() => setDismissed(message)}
+                    className='grid size-8 shrink-0 place-items-center rounded-lg hover:bg-background/50'
+                >
+                    <X className='size-4' aria-hidden />
+                </button>
+            )}
+        </div>
+    );
+}
+
 function Brand({ model }: { model: AppLayoutModel }) {
     const settings = useObsidian();
     const name = brandName(model.brand.name, settings);
@@ -464,6 +509,7 @@ export default function Shell({ model, children }: ViewProps<'layout.app'>) {
                 </div>
             </aside>
             <div className='relative z-1 flex min-w-0 flex-1 flex-col'>
+                <Announcement />
                 <header className='obs-topbar sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-transparent bg-background/92 px-4 sm:px-6 lg:px-8'>
                     <button
                         type='button'

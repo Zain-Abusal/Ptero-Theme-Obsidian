@@ -23,6 +23,11 @@ export function useObsidian(): ThemeSettings {
         switcherKey: s.switcherKey ?? 's',
         curseforgeKey: s.curseforgeKey ?? '',
         livePlayers: s.livePlayers ?? true,
+        bannerEnabled: s.bannerEnabled ?? false,
+        bannerText: s.bannerText ?? '',
+        bannerTone: s.bannerTone === 'warning' || s.bannerTone === 'danger' ? s.bannerTone : 'info',
+        bannerLink: s.bannerLink ?? '',
+        bannerDismissible: s.bannerDismissible ?? true,
     };
 }
 
