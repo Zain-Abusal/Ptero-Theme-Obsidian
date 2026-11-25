@@ -1,6 +1,21 @@
 import type { ReactNode } from 'react';
 import { Box } from 'lucide-react';
 import { cn } from '@pterodactyl/sdk';
+import fabricLogo from '../assets/fabric.png?inline';
+import forgeLogo from '../assets/forge.svg';
+import paperLogo from '../assets/papermc.svg';
+import purpurLogo from '../assets/purpur.svg';
+import velocityLogo from '../assets/velocity.svg';
+import neoforgeLogo from '../assets/neoforged.png?inline';
+
+const BRAND_LOGOS: Record<string, string> = {
+    paper: paperLogo,
+    purpur: purpurLogo,
+    fabric: fabricLogo,
+    velocity: velocityLogo,
+    forge: forgeLogo,
+    neoforge: neoforgeLogo,
+};
 
 const LOGOS: Record<string, ReactNode> = {
     paper: (
@@ -80,6 +95,16 @@ const LOGOS: Record<string, ReactNode> = {
 
 function SoftwareLogo({ software, className }: { software: string; className?: string }) {
     const cls = cn('size-4 shrink-0', className);
+    const brandLogo = BRAND_LOGOS[software.toLowerCase()];
+    if (brandLogo)
+        return (
+            <img
+                src={brandLogo}
+                alt=''
+                aria-hidden
+                className={cn(cls, 'object-contain', software.toLowerCase() === 'forge' && 'w-8')}
+            />
+        );
     const glyph = LOGOS[software.toLowerCase()];
     if (!glyph) return <Box className={cls} aria-hidden />;
 

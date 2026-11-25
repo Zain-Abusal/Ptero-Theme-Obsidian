@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Copy, Download, KeyRound, Network, Vote } from 'lucide-react';
-import { Alert, Badge, Button, Spinner, cn, http, toast } from '@pterodactyl/sdk';
+import { Alert, Badge, Button, PanelLink, Spinner, cn, http, toast } from '@pterodactyl/sdk';
 import { githubDownload } from '../lib/kits';
 import { looksInstalled } from '../lib/sources';
 import { useDirectory, useToolkit } from '../lib/useToolkit';
@@ -173,8 +173,7 @@ export default function VotifierScreen() {
                         <Panel title='Set it up'>
                             <Step n={1}>Give Votifier its own port</Step>
                             <p className='mb-5 text-sm text-muted-foreground'>
-                                The port must be one of this server's allocations, and not the game port. Pick one on
-                                the right.
+                                Assign an extra port in the panel&apos;s Network page, then select it from the list.
                             </p>
                             <Step n={2}>Add the server on each voting site</Step>
                             <p className='mb-5 text-sm text-muted-foreground'>
@@ -199,7 +198,13 @@ export default function VotifierScreen() {
                         {spare.length === 0 && !allocations.isLoading && (
                             <p className='text-sm text-muted-foreground'>
                                 This server has only its game port. Add an allocation on the Network page, then pick it
-                                here.
+                                here.{' '}
+                                <PanelLink
+                                    destination={{ to: '/server/$id/network' as '/server/$id', params: { id } }}
+                                    className='font-semibold underline'
+                                >
+                                    Open Network
+                                </PanelLink>
                             </p>
                         )}
                         <ul className='flex flex-col gap-1.5'>

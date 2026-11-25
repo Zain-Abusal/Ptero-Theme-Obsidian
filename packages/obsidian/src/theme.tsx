@@ -38,6 +38,7 @@ export default defineTheme({
         'dashboard.serverList': lazyView(() => import('./views/ServerList')),
         'dashboard.serverCard': lazyView(() => import('./views/ServerCard')),
         'page.server.console': lazyView(() => import('./views/ConsolePage')),
+        'server.startup.variables': lazyView(() => import('./views/StartupVariables')),
         'server.files.editor': lazyView(() => import('./views/FileEditor')),
         'server.terminal': lazyView(() => import('./views/Terminal')),
         'server.stats': lazyView(() => import('./views/Stats')),

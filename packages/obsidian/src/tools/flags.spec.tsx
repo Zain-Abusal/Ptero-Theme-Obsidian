@@ -153,7 +153,7 @@ test('supports memory helpers, preset detection, java image parsing and startup 
     );
 });
 
-test('renders FlagsScreen and applies selected preset to detected editable variable', async () => {
+test('renders editable flags and applies the edited value to the detected startup variable', async () => {
     const server = createTestServer({
         permissions: ['startup.read', 'startup.update'],
         eggFeatures: ['eula', 'java_version'],
@@ -192,14 +192,16 @@ test('renders FlagsScreen and applies selected preset to detected editable varia
     expect(screen.getByText('-Xms1G -Xmx1G')).not.toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /Generational ZGC/ }));
-    const preview = screen.getByRole('textbox', { name: 'Generated JVM flags' }) as HTMLTextAreaElement;
+    const preview = screen.getByRole('textbox', { name: 'Editable JVM flags' }) as HTMLTextAreaElement;
     expect(preview.value).toBe(presetById('zgc').generate(4096));
+    fireEvent.change(preview, { target: { value: `${preview.value} -Dserver.example=true` } });
 
     fireEvent.click(screen.getByRole('button', { name: 'Apply to JVM_FLAGS' }));
+    const editedFlags = `${presetById('zgc').generate(4096)} -Dserver.example=true`;
     await waitFor(() =>
         expect(putSpy).toHaveBeenCalledWith(`/api/client/servers/${server.attributes.identifier}/startup/variable`, {
             key: 'JVM_FLAGS',
-            value: presetById('zgc').generate(4096),
+            value: editedFlags,
         })
     );
 });
@@ -270,7 +272,7 @@ test('toggles headroom and memory switches and flags read-only variables', async
 
     expect(await screen.findByText(/is read-only on this egg/)).not.toBeNull();
 
-    const preview = screen.getByRole('textbox', { name: 'Generated JVM flags' }) as HTMLTextAreaElement;
+    const preview = screen.getByRole('textbox', { name: 'Editable JVM flags' }) as HTMLTextAreaElement;
     expect(preview.value).toContain('-Xms4096M -Xmx4096M');
 
     fireEvent.click(screen.getByRole('switch', { name: /Reserve container headroom/ }));
