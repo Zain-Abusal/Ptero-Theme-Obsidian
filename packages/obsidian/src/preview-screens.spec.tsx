@@ -37,6 +37,7 @@ const SCREENS = [
     'Plugins',
     'Kits',
     'Versions',
+    'Flags',
     'Properties',
     'Players',
     'Packs',

@@ -63,6 +63,23 @@
                 }
             },
             {
+                "id": "flags",
+                "area": "server",
+                "path": "mc/flags",
+                "nav": {
+                    "label": "Startup",
+                    "icon": "flag",
+                    "group": "Minecraft",
+                    "badge": "New"
+                },
+                "permission": [
+                    "startup.read"
+                ],
+                "when": {
+                    "runtime": true
+                }
+            },
+            {
                 "id": "plugins",
                 "area": "server",
                 "path": "mc/plugins",
