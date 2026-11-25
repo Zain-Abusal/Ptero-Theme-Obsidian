@@ -25,10 +25,22 @@ export default function Segmented<T extends string>({
 
     useLayoutEffect(() => {
         const root = ref.current;
-        const active = root?.querySelector<HTMLElement>('[aria-selected="true"]');
-        if (!root || !active) return;
-        root.style.setProperty('--seg-x', `${active.offsetLeft}px`);
-        root.style.setProperty('--seg-w', `${active.offsetWidth}px`);
+        if (!root) return;
+        const place = () => {
+            const active = root.querySelector<HTMLElement>('[aria-selected="true"]');
+            if (!active || active.offsetWidth === 0) {
+                delete root.dataset.measured;
+                return;
+            }
+            root.style.setProperty('--seg-x', `${active.offsetLeft}px`);
+            root.style.setProperty('--seg-w', `${active.offsetWidth}px`);
+            root.dataset.measured = '';
+        };
+        place();
+        const observer = new ResizeObserver(place);
+        observer.observe(root);
+        void document.fonts?.ready.then(place);
+        return () => observer.disconnect();
     }, [value, options.length]);
 
     return (

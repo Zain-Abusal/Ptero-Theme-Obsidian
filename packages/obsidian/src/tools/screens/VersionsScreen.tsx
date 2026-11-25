@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Box, Coffee, Cpu, Feather, Hammer, Network, Scroll, Send, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Coffee, Hammer, TriangleAlert } from 'lucide-react';
 import {
     Badge,
     Button,
@@ -25,19 +25,9 @@ import {
 } from '../../mc/loaders';
 import { useToolkit } from '../lib/useToolkit';
 import Page, { Eyebrow, Panel, Step, attempt } from '../ui/Page';
+import SoftwareLogo from '../ui/SoftwareLogo';
 
 type SoftwareId = Provider['id'] | ModLoader;
-
-const icons: Record<SoftwareId, typeof Box> = {
-    paper: Send,
-    purpur: Box,
-    folia: Feather,
-    vanilla: Scroll,
-    fabric: Cpu,
-    velocity: Network,
-    forge: Hammer,
-    neoforge: Hammer,
-};
 
 const loaderProviders: { id: ModLoader; label: string; blurb: string }[] = [
     { id: 'forge', label: 'Forge', blurb: 'The classic mod loader for Minecraft 1.17 and newer.' },
@@ -65,12 +55,10 @@ function useRunState(uuid: string) {
 }
 
 function Current({ installed, jar, running }: { installed: Installed | undefined; jar: string; running: string }) {
-    const Glyph = installed && installed.software in icons ? icons[installed.software as Provider['id']] : Box;
-
     return (
         <div className='flex items-center gap-4 rounded-xl border border-border bg-card p-5'>
             <span className='grid size-14 place-items-center rounded-xl border border-border bg-muted'>
-                <Glyph className='size-6' aria-hidden />
+                <SoftwareLogo software={installed?.software ?? ''} className='size-6' />
             </span>
             <div className='min-w-0'>
                 <Eyebrow>Now running</Eyebrow>
@@ -252,9 +240,9 @@ export default function VersionsScreen() {
             <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]'>
                 <div className='min-w-0'>
                     <Step n={1}>Software</Step>
-                    <div className='grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'>
+                    <div className='grid grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-3'>
                         {[...providers, ...loaderProviders].map((p) => {
-                            const Glyph = icons[p.id];
+                            const loaderOption = isLoader(p.id);
                             return (
                                 <button
                                     key={p.id}
@@ -269,7 +257,11 @@ export default function VersionsScreen() {
                                     )}
                                 >
                                     <span className='grid size-10 shrink-0 place-items-center rounded-lg border border-border bg-background'>
-                                        <Glyph className='size-4' aria-hidden />
+                                        {loaderOption ? (
+                                            <Hammer className='size-4' aria-hidden />
+                                        ) : (
+                                            <SoftwareLogo software={p.id} className='size-4' />
+                                        )}
                                     </span>
                                     <span className='min-w-0'>
                                         <span className='flex items-center gap-2 text-sm font-bold'>
@@ -280,7 +272,9 @@ export default function VersionsScreen() {
                                                 </Badge>
                                             )}
                                         </span>
-                                        <span className='block truncate text-xs text-muted-foreground'>{p.blurb}</span>
+                                        <span className='hidden truncate text-xs text-muted-foreground sm:block'>
+                                            {p.blurb}
+                                        </span>
                                     </span>
                                 </button>
                             );

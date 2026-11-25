@@ -469,6 +469,15 @@ export function Browser({ kind, directory, action }: { kind: Kind; directory?: s
                                     aria-label={`Search ${config.label.toLowerCase()}`}
                                     className='h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm outline-none focus:ring-0'
                                 />
+                                <span className='h-5 w-px bg-border' aria-hidden />
+                                <span className='text-xs text-muted-foreground'>MC</span>
+                                <input
+                                    value={version}
+                                    onChange={(e) => setVersion(e.target.value.trim())}
+                                    placeholder='any'
+                                    aria-label='Minecraft version'
+                                    className='w-12 border-0 bg-transparent p-0 font-mono text-xs outline-none focus:ring-0'
+                                />
                             </label>
                             {sources.length > 1 && (
                                 <Segmented
@@ -482,16 +491,6 @@ export function Browser({ kind, directory, action }: { kind: Kind; directory?: s
                                     }}
                                 />
                             )}
-                            <label className='flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-xs'>
-                                <span className='text-muted-foreground'>MC</span>
-                                <input
-                                    value={version}
-                                    onChange={(e) => setVersion(e.target.value.trim())}
-                                    placeholder='any'
-                                    aria-label='Minecraft version'
-                                    className='w-14 border-0 bg-transparent p-0 font-mono text-xs outline-none focus:ring-0'
-                                />
-                            </label>
                         </div>
                         {showCategories && (kind === 'plugin' || kind === 'mod') && (
                             <div className='flex flex-col'>
@@ -523,7 +522,10 @@ export function Browser({ kind, directory, action }: { kind: Kind; directory?: s
                             </div>
                         )}
                         <p className='text-xs text-muted-foreground'>
-                            Matched to {software ? softwareLabel[software.software] : 'this server'}{' '}
+                            Matched to{' '}
+                            {software && software.software !== 'unknown'
+                                ? softwareLabel[software.software]
+                                : 'this server'}{' '}
                             {version || 'on any version'}
                             {folder && `, installs to ${folder}`}
                         </p>
