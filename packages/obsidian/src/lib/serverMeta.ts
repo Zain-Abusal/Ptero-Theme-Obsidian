@@ -2,6 +2,7 @@ import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { http } from '@pterodactyl/sdk';
 
 export interface ServerMeta {
+    readonly [key: string]: unknown;
     readonly group?: string;
     readonly color?: string;
 
@@ -48,8 +49,9 @@ export function useSaveServerMeta(identifier: string) {
     const client = useQueryClient();
 
     return async (meta: ServerMeta) => {
+        const current = await readMeta(identifier);
         const clean = Object.fromEntries(
-            Object.entries(meta).filter(([, v]) => v !== undefined && v !== '' && v !== null)
+            Object.entries({ ...current, ...meta }).filter(([, v]) => v !== undefined && v !== '' && v !== null)
         );
         await http.post(`/api/client/servers/${identifier}/files/write`, JSON.stringify(clean, null, 2) + '\n', {
             params: { file: META_FILE },

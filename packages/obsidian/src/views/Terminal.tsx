@@ -3,6 +3,7 @@ import { ArrowRight, ChevronsDown, TerminalSquare } from 'lucide-react';
 import { Button, SpinnerOverlay, cn, useCurrentServer } from '@pterodactyl/sdk';
 import type { ServerConsoleCommand, ViewProps } from '@pterodactyl/sdk/theme';
 import ConsoleTools from './console/ConsoleTools';
+import QuickCommands from '../ops/QuickCommands';
 
 function onCommandKey(command: ServerConsoleCommand, event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'ArrowUp') {
@@ -62,6 +63,7 @@ export default function Terminal({ model, className }: ViewProps<'server.termina
                     </button>
                 )}
             </div>
+            {server && <QuickCommands server={server} command={command} />}
             {command.allowed && (
                 <div className='flex items-center gap-2 border-t border-border/70 py-2 pr-2 pl-4'>
                     <span className='font-mono text-sm font-bold text-success' aria-hidden>
