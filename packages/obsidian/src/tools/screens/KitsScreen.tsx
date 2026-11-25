@@ -291,7 +291,7 @@ export default function KitsScreen() {
     return (
         <Page
             title='Kits'
-            description={`Plugin bundles for common setups, matched to ${installed ? softwareLabel[installed.software] : 'this server'}${gameVersion ? ` ${gameVersion}` : ''}. Plugins you already have are skipped.`}
+            description={`Plugin bundles for common setups, matched to ${installed && installed.software !== 'unknown' ? softwareLabel[installed.software] : 'this server'}${gameVersion ? ` ${gameVersion}` : ''}. Plugins you already have are skipped.`}
         >
             {modded && (
                 <Alert type='warning'>
@@ -299,7 +299,7 @@ export default function KitsScreen() {
                     first.
                 </Alert>
             )}
-            <ul className='grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3'>
+            <ul className='gap-4 md:columns-2 xl:columns-3 [&>li]:mb-4 [&>li]:break-inside-avoid'>
                 {kits.map((kit) => (
                     <KitCard
                         key={kit.id}

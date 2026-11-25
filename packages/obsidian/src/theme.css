@@ -206,6 +206,12 @@
     --shadow-md: 0 0 0 1px var(--border), var(--obs-lift);
 }
 
+@media (max-width: 639px) {
+    :root {
+        --layout-gutter: 1rem;
+    }
+}
+
 [data-obs-density='compact'] {
     --spacing: 0.215rem;
     --layout-gutter: 1rem;
@@ -387,6 +393,14 @@
 .obs-collapse[data-open] {
     grid-template-rows: 1fr;
     opacity: 1;
+}
+
+.obs-segmented:not([data-measured]) [aria-selected='true'] {
+    background: var(--primary);
+}
+
+.obs-segmented:not([data-measured]) .obs-segmented-thumb {
+    display: none;
 }
 
 .obs-segmented-thumb {

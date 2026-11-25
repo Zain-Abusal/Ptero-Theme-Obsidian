@@ -45,7 +45,11 @@ function Current({ installed, jar, running }: { installed: Installed | undefined
             <div className='min-w-0'>
                 <Eyebrow>Now running</Eyebrow>
                 <p className='text-2xl font-bold tracking-tight'>
-                    {installed ? softwareLabel[installed.software] : '…'}{' '}
+                    {installed
+                        ? installed.software === 'unknown'
+                            ? 'Not detected'
+                            : softwareLabel[installed.software]
+                        : '...'}{' '}
                     <span className='font-semibold text-muted-foreground'>{installed?.version ?? ''}</span>
                 </p>
                 <div className='mt-1.5 flex flex-wrap gap-2'>
@@ -188,7 +192,7 @@ export default function VersionsScreen() {
             <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]'>
                 <div className='min-w-0'>
                     <Step n={1}>Software</Step>
-                    <div className='grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'>
+                    <div className='grid grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-3'>
                         {providers.map((p) => {
                             const Glyph = icons[p.id];
                             return (
@@ -216,7 +220,9 @@ export default function VersionsScreen() {
                                                 </Badge>
                                             )}
                                         </span>
-                                        <span className='block truncate text-xs text-muted-foreground'>{p.blurb}</span>
+                                        <span className='hidden truncate text-xs text-muted-foreground sm:block'>
+                                            {p.blurb}
+                                        </span>
                                     </span>
                                 </button>
                             );
@@ -284,7 +290,11 @@ export default function VersionsScreen() {
                         <div className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2'>
                             <div className='rounded-lg border border-border bg-muted/40 p-3 text-center'>
                                 <p className='truncate text-sm font-bold'>
-                                    {installed ? softwareLabel[installed.software] : '…'}
+                                    {installed
+                                        ? installed.software === 'unknown'
+                                            ? 'Not detected'
+                                            : softwareLabel[installed.software]
+                                        : '...'}
                                 </p>
                                 <p className='font-mono text-xs text-muted-foreground'>{installed?.version ?? '?'}</p>
                             </div>
