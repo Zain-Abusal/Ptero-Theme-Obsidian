@@ -17,6 +17,7 @@ const visible = ({ server }: { server?: Parameters<typeof isMinecraft>[0] }) => 
 const SCREENS = {
     players: () => import('./tools/screens/PlayersScreen'),
     versions: () => import('./tools/screens/VersionsScreen'),
+    flags: () => import('./tools/screens/FlagsScreen'),
     plugins: () => import('./tools/screens/PluginsScreen'),
     mods: () => import('./tools/screens/ModsScreen'),
     kits: () => import('./tools/screens/KitsScreen'),
