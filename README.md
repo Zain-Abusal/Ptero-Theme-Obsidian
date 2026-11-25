@@ -12,15 +12,24 @@ Obsidian is a theme and Minecraft server toolkit for Pterodactyl Panel v2. It us
 
 ## Preview
 
-Sample data is used in these screenshots.
+These previews use sample server data. Select any image to open it at full size.
+
+### Dashboard · desktop · dark mode
 
 <p align="center">
-  <img src="docs/images/dashboard-dark.png" alt="Obsidian dashboard on desktop in dark mode" width="100%">
+  <a href="docs/images/dashboard-dark.png"><img src="docs/images/dashboard-dark.png" alt="Obsidian dashboard with server status and resource summaries in dark mode" width="100%"></a>
 </p>
 
+### Software selector · desktop · light mode
+
 <p align="center">
-  <img src="docs/images/versions-desktop-dark.png" alt="Minecraft software selector with project logos" width="72%">
-  <img src="docs/images/startup-mobile-dark.png" alt="Editable JVM flags on a phone" width="24%">
+  <a href="docs/images/versions-light.png"><img src="docs/images/versions-light.png" alt="Minecraft software selector with project logos in light mode" width="100%"></a>
+</p>
+
+### JVM flags · phone · dark mode
+
+<p align="center">
+  <a href="docs/images/startup-mobile-dark.png"><img src="docs/images/startup-mobile-dark.png" alt="Editable Minecraft JVM flag presets and startup controls on a phone" width="390"></a>
 </p>
 
 ## Install
