@@ -28,6 +28,13 @@ const CONFIGS = [
     { label: 'Paper worlds', file: '/config/paper-world-defaults.yml' },
 ];
 
+const MOTD_PRESETS = [
+    { label: 'Welcome', value: '§6✦ §eWelcome to the server! §6✦' },
+    { label: 'Community', value: '§bSurvival §8| §fFriendly community' },
+    { label: 'Two lines', value: '§6Welcome back!\\n§7Have fun and be kind.' },
+    { label: 'Adventure', value: '§c⚔ §6Adventure awaits §c⚔' },
+];
+
 const bool = (value: string | undefined) => value === 'true';
 
 function Control({ field, value, onChange }: { field: Field; value: string; onChange: (value: string) => void }) {
@@ -129,6 +136,7 @@ function Motd({
 }) {
     const { server } = useToolkit();
     const lines = value.split(/\\n|\n/).slice(0, 2);
+    const [examplesOpen, setExamplesOpen] = useState(false);
 
     return (
         <div className='flex flex-col gap-3 rounded-xl border border-border bg-card p-4'>
@@ -196,6 +204,30 @@ function Motd({
                         </button>
                     ))}
                 </div>
+            </div>
+            <div>
+                <button
+                    type='button'
+                    aria-expanded={examplesOpen}
+                    onClick={() => setExamplesOpen(!examplesOpen)}
+                    className='text-xs font-semibold text-muted-foreground underline underline-offset-4 hover:text-foreground'
+                >
+                    {examplesOpen ? 'Hide examples' : 'Browse examples'}
+                </button>
+                <Collapse open={examplesOpen}>
+                    <div className='mt-3 flex flex-wrap gap-2'>
+                        {MOTD_PRESETS.map((preset) => (
+                            <button
+                                key={preset.label}
+                                type='button'
+                                onClick={() => onChange(preset.value)}
+                                className='rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold transition hover:bg-muted'
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
+                    </div>
+                </Collapse>
             </div>
             <p className='text-xs text-muted-foreground'>Use \n for a second line.</p>
         </div>
