@@ -1,8 +1,8 @@
 import { afterEach, expect, test, vi } from 'vitest';
-import { fetchAsFile, installMany, type Entry } from './lib/api';
+import { fetchAsFile, getJson, installMany, type Entry } from './lib/api';
 import { cfLoaderType, cfToProject, type CfMod } from './lib/curseforge';
 import { mergeInto, planMrpack, type MrIndex } from './lib/modpack';
-import { modrinthDownload, modrinthLoaders } from './lib/sources';
+import { modrinthDownload, modrinthLoaders, search } from './lib/sources';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -186,8 +186,40 @@ test('picks the primary file and its sha1, falling back from the requested Minec
         exact: false,
     });
     expect(String(fetchMock.mock.calls[0][0])).toContain(encodeURIComponent('["minecraft"]'));
+    expect(String(fetchMock.mock.calls[0][0])).toContain('include_changelog=false');
     expect(modrinthLoaders('datapack', ['paper'])).toEqual(['datapack']);
     expect(modrinthLoaders('modpack', ['paper'])).toEqual([]);
+});
+
+test('forwards AbortSignal through search and getJson to fetch', async () => {
+    const controller = new AbortController();
+    const fetchMock = vi.fn((url: string) =>
+        ok(
+            JSON.stringify(
+                url.includes('hangar') ? { pagination: { count: 0 }, result: [] } : { hits: [], total_hits: 0 }
+            )
+        )
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getJson('https://api.modrinth.com/v2/test', controller.signal);
+    await getJson('https://api.modrinth.com/v2/test', { signal: controller.signal });
+    await search(
+        'modrinth',
+        { query: '', kind: 'plugin', loaders: ['paper'], gameVersion: '1.21.4', category: 'all', offset: 0 },
+        controller.signal
+    );
+    await search(
+        'hangar',
+        { query: '', kind: 'plugin', loaders: ['paper'], gameVersion: '1.21.4', category: 'all', offset: 0 },
+        controller.signal
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    for (const call of fetchMock.mock.calls) {
+        const init = (call as unknown as [string, RequestInit])[1];
+        expect(init.signal).toBe(controller.signal);
+    }
 });
 
 function entry(name: string, isFile: boolean): Entry {

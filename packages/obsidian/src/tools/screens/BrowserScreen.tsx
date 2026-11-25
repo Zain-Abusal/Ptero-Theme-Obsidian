@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, ChevronDown, Download, ExternalLink, Package, Search, Trash2 } from 'lucide-react';
 import {
@@ -323,13 +323,15 @@ export function Browser({ kind, directory, action }: { kind: Kind; directory?: s
     const [query, setQuery] = useState('');
     const [term, setTerm] = useState('');
     const [category, setCategory] = useState('all');
-    const [version, setVersion] = useState('');
+    const [versionInput, setVersionInput] = useState<string | null>(null);
+    const [versionFilter, setVersionFilter] = useState<string | null>(null);
     const [busy, setBusy] = useState<string | null>(null);
     const [tab, setTab] = useState<'browse' | 'installed'>('browse');
     const [moreCategories, setMoreCategories] = useState(false);
     const debounced = useDebouncedCallback((value: string) => setTerm(value), 350);
-
-    useEffect(() => setVersion(gameVersion ?? ''), [gameVersion]);
+    const debouncedVersion = useDebouncedCallback((value: string) => setVersionFilter(value), 350);
+    const version = versionInput ?? gameVersion ?? '';
+    const activeVersion = versionFilter ?? gameVersion ?? '';
 
     const files = useMemo(
         () =>
@@ -350,20 +352,24 @@ export function Browser({ kind, directory, action }: { kind: Kind; directory?: s
             source,
             term,
             category,
-            version,
+            activeVersion,
             loaders.join(','),
             source === 'curseforge' ? curseforgeKey : '',
         ],
-        queryFn: ({ pageParam }) =>
-            search(source, {
-                query: term,
-                kind,
-                loaders,
-                gameVersion: version || null,
-                category,
-                offset: pageParam,
-                cfKey: curseforgeKey,
-            }),
+        queryFn: ({ pageParam, signal }) =>
+            search(
+                source,
+                {
+                    query: term,
+                    kind,
+                    loaders,
+                    gameVersion: activeVersion || null,
+                    category,
+                    offset: pageParam,
+                    cfKey: curseforgeKey,
+                },
+                signal
+            ),
         initialPageParam: 0,
         getNextPageParam: (last, pages) => {
             const loaded = pages.length * pageSize;
@@ -473,7 +479,11 @@ export function Browser({ kind, directory, action }: { kind: Kind; directory?: s
                                 <span className='text-xs text-muted-foreground'>MC</span>
                                 <input
                                     value={version}
-                                    onChange={(e) => setVersion(e.target.value.trim())}
+                                    onChange={(e) => {
+                                        const next = e.target.value.trim();
+                                        setVersionInput(next);
+                                        debouncedVersion(next);
+                                    }}
                                     placeholder='any'
                                     aria-label='Minecraft version'
                                     className='w-12 border-0 bg-transparent p-0 font-mono text-xs outline-none focus:ring-0'
@@ -526,7 +536,7 @@ export function Browser({ kind, directory, action }: { kind: Kind; directory?: s
                             {software && software.software !== 'unknown'
                                 ? softwareLabel[software.software]
                                 : 'this server'}{' '}
-                            {version || 'on any version'}
+                            {activeVersion || 'on any version'}
                             {folder && `, installs to ${folder}`}
                         </p>
                     </div>
