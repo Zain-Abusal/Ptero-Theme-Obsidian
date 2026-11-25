@@ -3,8 +3,8 @@
     "id": "obsidian",
     "type": "theme",
     "name": "Obsidian",
-    "version": "1.3.0",
-    "description": "A configurable Pterodactyl theme with a Minecraft toolkit, console autocomplete, startup flag presets, port tools, and responsive file editing.",
+    "version": "1.4.0",
+    "description": "A configurable Pterodactyl theme with a Minecraft toolkit, console autocomplete, editable startup flag presets, and responsive file editing.",
     "icon": "gem",
     "requires": {
         "panel": "^2.0.0-dev",

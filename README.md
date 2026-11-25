@@ -114,4 +114,4 @@ To add a Minecraft page, add its route and permissions to `packages/obsidian/ext
 
 ## Release
 
-Update the version in `packages/obsidian/extension.json` and `packages/obsidian/package.json`, then push a matching tag such as `v1.3.0`. The release workflow builds and uploads the `.pteroext` file.
+Update the version in `packages/obsidian/extension.json` and `packages/obsidian/package.json`, then push a matching tag such as `vX.Y.Z`. The release workflow builds and uploads the `.pteroext` file.

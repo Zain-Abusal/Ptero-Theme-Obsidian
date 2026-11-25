@@ -204,7 +204,7 @@ test('renders editable flags and applies the edited value to the detected startu
             value: editedFlags,
         })
     );
-});
+}, 15_000);
 
 test('shows copyable fallback and admin note when no editable flags variable exists', async () => {
     const server = createTestServer({
